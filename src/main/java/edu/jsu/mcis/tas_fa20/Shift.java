@@ -1,7 +1,7 @@
 package edu.jsu.mcis.tas_fa20;
 
 import java.time.LocalTime;
-
+import java.time.temporal.ChronoUnit;
 
 public class Shift {
     private int id;
@@ -13,10 +13,10 @@ public class Shift {
     private int dock;
     private LocalTime lunchstart;
     private LocalTime lunchstop;
-    private int lunchduration;
+    private long lunchduration;
     private int lunchdeduct;
     
-    public Shift(int id, String description, LocalTime start, LocalTime stop, int interval, int graceperiod, int dock, LocalTime lunchstart, LocalTime lunchstop, int lunchduration, int lunchdeduct){
+    public Shift(int id, String description, LocalTime start, LocalTime stop, int interval, int graceperiod, int dock, LocalTime lunchstart, LocalTime lunchstop, long lunchduration, int lunchdeduct){
         this.id = id;
         this.description = description;
         this.start = start;
@@ -66,11 +66,57 @@ public class Shift {
         return lunchstop;
     }
     
-    public int getLunchDuration(){
+    public long getLunchDuration(){
         return lunchduration;
     }
     
     public int getLunchDeduct(){
         return lunchdeduct;
     }
+    
+    public void setID(int id){
+        this.id = id;
+    }
+    
+    public void setDescription(String description){
+        this.description = description;
+    }
+    
+    public void setStart(LocalTime start){
+        this.start = start;
+    }
+    
+    public void setStop(LocalTime stop){
+        this.stop = stop;
+    }
+    
+    public void setInterval(int interval){
+        this.interval = interval;
+    }
+    
+    public void setGracePeriod(int graceperiod){
+        this.graceperiod = graceperiod;
+    }
+    
+    public void setDock(int dock){
+        this.dock = dock;
+    }
+    
+    public void setLunchStart(LocalTime lunchstart){
+        this.lunchstart = lunchstart;
+    }
+    
+    public void setLunchStop(LocalTime lunchstop){
+        this.lunchstop = lunchstart;
+    }
+    
+    public void setLunchDuration(LocalTime lunchstart, LocalTime lunchstop){
+        this.lunchduration = ChronoUnit.MINUTES.between(lunchstart, lunchstop);
+    }
+    
+    public void setLunchDeduct(int lunchdeduct){
+        this.lunchdeduct = lunchdeduct;
+    }
+    
+    
 }
