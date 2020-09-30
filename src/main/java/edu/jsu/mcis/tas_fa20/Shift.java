@@ -15,5 +15,16 @@ public class Shift {
     private LocalTime lunchstop;
     private int lunchdeduct;
     
-    
+    public Shift(int id, String description, LocalTime start, LocalTime stop, int interval, int graceperiod, int dock, LocalTime lunchstart, LocalTime lunchstop, int lunchdeduct){
+        this.id = id;
+        this.description = description;
+        this.start = start;
+        this.stop = stop;
+        this.interval = interval;
+        this.graceperiod = graceperiod;
+        this.dock = dock;
+        this.lunchstart = lunchstart;
+        this.lunchstop = lunchstop;
+        this.lunchdeduct = lunchdeduct;
+    }
 }
