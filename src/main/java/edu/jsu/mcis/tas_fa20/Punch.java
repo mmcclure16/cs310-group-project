@@ -18,5 +18,27 @@ public class Punch {
         this.adjustmenttype = adjustmenttype;
     }
     
+    public String getID(){
+        return id;
+    }
     
+    public String getTerminalID(){
+        return terminalid;
+    }
+    
+    public String getBadgeID(){
+        return badgeid;
+    }
+    
+    public Long getOriginalTimeStamp(){
+        return originaltimestamp;
+    }
+    
+    public String getPunchTypeID(){
+        return punchtypeid;
+    }
+    
+    public String getAdjustmentType(){
+        return adjustmenttype;
+    }
 }
