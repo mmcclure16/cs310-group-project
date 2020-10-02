@@ -1,21 +1,45 @@
-package edu.jsu.mcis.tas_fa20;
+package edu.jsu.mcis;
 
+import java.util.*;
 
 public class Punch {
-    private int id;
-    private int terminalid;
-    private String badgeid;
-    private Long originaltimestamp;
-    private int punchtypeid;
-    private String adjustmenttype;
     
-    public Punch(int id, int terminalid, String badgeid, Long originaltimestamp, int punchtypeid, String adjustmenttype){
+    private int id;
+    private byte terminalID;
+    private String badgeID;
+    private Long originalTimeStamp;
+    private byte punchTypeID;
+    
+    private String adjustmentType;
+    
+    public Punch(String badgeID, Map<String, Byte> byteParams) {
+        this(
+                0,
+                byteParams.get("terminalID"),
+                badgeID,
+                null,
+                byteParams.get("punchTypeID")
+        );
+    }
+    
+    public Punch(int id, String badgeID, Map<String, Byte> byteParams, Long originalTimeStamp) {
+        this(
+                id,
+                byteParams.get("terminalID"),
+                badgeID,
+                originalTimeStamp,
+                byteParams.get("punchTypeID")
+        );
+    }
+    
+    private Punch(int id, byte terminalID, String badgeID, Long originalTimeStamp, byte punchTypeID) {
         this.id = id;
-        this.terminalid = terminalid;
-        this.badgeid = badgeid;
-        this.originaltimestamp = originaltimestamp;
-        this.punchtypeid = punchtypeid;
-        this.adjustmenttype = adjustmenttype;
+        this.terminalID = terminalID;
+        this.badgeID = badgeID;
+        this.originalTimeStamp = this.originalTimeStamp;
+        this.punchTypeID = punchTypeID;
+        
+        adjustmentType = null;
     }
     
     public int getID(){
@@ -23,22 +47,23 @@ public class Punch {
     }
     
     public int getTerminalID(){
-        return terminalid;
+        return terminalID;
     }
     
     public String getBadgeID(){
-        return badgeid;
+        return badgeID;
     }
     
     public Long getOriginalTimeStamp(){
-        return originaltimestamp;
+        return originalTimeStamp;
     }
     
     public int getPunchTypeID(){
-        return punchtypeid;
+        return punchTypeID;
     }
     
     public String getAdjustmentType(){
-        return adjustmenttype;
+        return adjustmentType;
     }
+    
 }
