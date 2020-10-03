@@ -36,7 +36,7 @@ public class Punch {
         this.id = id;
         this.terminalID = terminalID;
         this.badgeID = badgeID;
-        this.originalTimeStamp = this.originalTimeStamp;
+        this.originalTimeStamp = originalTimeStamp;
         this.punchTypeID = punchTypeID;
         
         adjustmentType = null;
