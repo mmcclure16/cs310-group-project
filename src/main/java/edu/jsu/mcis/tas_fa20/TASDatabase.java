@@ -1,12 +1,9 @@
 package edu.jsu.mcis.tas_fa20;
 
 import java.sql.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class TASDatabase {
-    public TASDatabase(){
         Connection conn = null;
         PreparedStatement pstSelect = null, pstUpdate = null;
         ResultSet resultset = null;
@@ -16,7 +13,7 @@ public class TASDatabase {
 
         boolean hasresults;
         int resultCount, columnCount = 0;
-        
+    public TASDatabase(){
         try {
 
             /* Identify the Server */
@@ -47,7 +44,75 @@ public class TASDatabase {
             System.err.println(e.toString());
         } 
     }
-}
-        
+    public Punch getPunch(String punchID){
+        try{
+            
+        }catch (Exception e) {
+            System.err.println(e.toString());
+        } 
+        return null;
+    }
+    
+    public Badge getBadge(String badgeID){
+        try{
+            
+        }catch (Exception e) {
+            System.err.println(e.toString());
+        } 
+        return null;
+    }
+    
+    public Shift getShift(String shiftID){
+        try{
+            
+        }catch (Exception e) {
+            System.err.println(e.toString());
+        } 
+        return null;
+    }
+    
+    public Shift getShift(Badge badge){
+        try{
+            
+        }catch (Exception e) {
+            System.err.println(e.toString());
+        } 
+        return null;
+    }
+    
+    public void close() throws SQLException{
+        try{
+            conn.close();
+            
+            if (resultset != null) {
+                    try {
+                        resultset.close();
+                        resultset = null;
+                    } catch (Exception e) {
+                    }
+                }
 
- 
+                if (pstSelect != null) {
+                    try {
+                        pstSelect.close();
+                        pstSelect = null;
+                    } catch (Exception e) {
+                    }
+                }
+
+                if (pstUpdate != null) {
+                    try {
+                        pstUpdate.close();
+                        pstUpdate = null;
+                    } catch (Exception e) {
+                    }
+                }
+
+            }catch (Exception e) {
+            System.err.println(e.toString());
+        }          
+    }
+}
+
+
+    
