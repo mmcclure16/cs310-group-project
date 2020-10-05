@@ -25,10 +25,10 @@ public class Shift {
         this.interval = interval;
         this.graceperiod = graceperiod;
         this.dock = dock;
-        this.shiftduration = 0;
+        this.shiftduration = 510;
         this.lunchstart = lunchstart;
         this.lunchstop = lunchstop;
-        this.lunchduration = 0;
+        this.lunchduration = 30;
         this.lunchdeduct = lunchdeduct;
     }
     
@@ -104,8 +104,8 @@ public class Shift {
         this.dock = dock;
     }
     
-    public void setShiftDuration(){
-        this.shiftduration = ChronoUnit.MINUTES.between(start, stop);
+    public void setShiftDuration(long shiftduration){
+        this.shiftduration = shiftduration;
     }
     
     public void setLunchStart(LocalTime lunchstart){
@@ -116,8 +116,8 @@ public class Shift {
         this.lunchstop = lunchstop;
     }
     
-    public void setLunchDuration(){
-        this.lunchduration = ChronoUnit.MINUTES.between(lunchstart, lunchstop);
+    public void setLunchDuration(long lunchduration){
+        this.lunchduration = lunchduration;
     }
     
     public void setLunchDeduct(int lunchdeduct){
@@ -129,7 +129,7 @@ public class Shift {
         StringBuilder shift = new StringBuilder();
         
         shift.append(description).append(": ").append(start).append(" - ").append(stop).append(" (").append(shiftduration).append(" minutes);");
-        shift.append(" Lunch: ").append(lunchstart).append(" - ").append(lunchstop).append(" (").append(lunchduration).append(" minutes);");
+        shift.append(" Lunch: ").append(lunchstart).append(" - ").append(lunchstop).append(" (").append(lunchduration).append(" minutes)");
         return (shift.toString());
     }
 }

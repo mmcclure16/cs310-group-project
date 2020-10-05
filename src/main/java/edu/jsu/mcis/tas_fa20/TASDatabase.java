@@ -104,9 +104,8 @@ public class TASDatabase {
                 lunchdeduct = result.getInt("lunchdeduct");
                 s = new Shift(id, description, start, stop, interval, graceperiod, dock, lunchstart, lunchstop, lunchdeduct);
             }
-            System.out.println(s.toString());
-            System.out.println("Shift 1: 07:00 - 15:30 (510 minutes); Lunch: 12:00 - 12:30 (30 minutes)");
             return s;
+            
         }catch (Exception e) {
             System.err.println(e.toString());
         } 
