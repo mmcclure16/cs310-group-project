@@ -1,8 +1,8 @@
 package edu.jsu.mcis;
 
+import java.util.*;
 import java.sql.*;
 import java.time.LocalTime;
-
 
 public class TASDatabase {
         Connection conn = null;
@@ -75,41 +75,50 @@ public class TASDatabase {
         return null;
     }
     
-    public Shift getShift(int shiftID){
-        Shift s = new Shift(0, null, null, null, 0, 0, 0, null, null, 0);
-        try{
+    public Shift getShift(int shiftID) {
+        return getShift((byte)shiftID);
+    }
+    
+    private Shift getShift(byte shiftID) {
+        
+        try {
+            
             Statement statement = conn.createStatement();
             String query = "SELECT * FROM tas.shift WHERE id = '" + shiftID + "';";
             ResultSet result = statement.executeQuery(query);
             
-            while(result.next()){
-                int id, interval, graceperiod, dock, lunchdeduct;;
-                String description;
-                LocalTime start, stop, lunchstart, lunchstop;;
-                Time T;
-
-                id = result.getInt("id");
-                description = result.getString("description");
-                T = result.getTime("start");
-                start = T.toLocalTime();
-                T = result.getTime("stop");
-                stop = T.toLocalTime();
-                interval = result.getInt("interval");
-                graceperiod = result.getInt("graceperiod");
-                dock = result.getInt("dock");
-                T = result.getTime("lunchstart");
-                lunchstart = T.toLocalTime();
-                T = result.getTime("lunchstop");
-                lunchstop = T.toLocalTime();
-                lunchdeduct = result.getInt("lunchdeduct");
-                s = new Shift(id, description, start, stop, interval, graceperiod, dock, lunchstart, lunchstop, lunchdeduct);
+            if (result.next()) {
+                
+                HashMap byteResults = new HashMap<String, Byte>();
+                HashMap localTimeResults = new HashMap<String, LocalTime>();
+                
+                byteResults.put("id", shiftID);
+                byteResults.put("interval", result.getByte("interval"));
+                byteResults.put("gracePeriod", result.getByte("graceperiod"));
+                byteResults.put("dock", result.getByte("dock"));
+                
+                localTimeResults.put("start", result.getTime("start").toLocalTime());
+                localTimeResults.put("stop", result.getTime("stop").toLocalTime());
+                localTimeResults.put("lunchStart", result.getTime("lunchstart").toLocalTime());
+                localTimeResults.put("lunchStop", result.getTime("lunchstop").toLocalTime());
+                
+                return new Shift(
+                        byteResults,
+                        localTimeResults,
+                        result.getString("description"),
+                        result.getShort("lunchdeduct")
+                );
+                
             }
-            return s;
             
-        }catch (Exception e) {
+            else throw new Exception("Query unsuccessful: shift with ID " + shiftID + " either does not exist or the database failed.");
+            
+        } catch (Exception e) {
             System.err.println(e.toString());
-        } 
+        }
+        
         return null;
+        
     }
     
     public Shift getShift(Badge badge){
