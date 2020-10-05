@@ -17,7 +17,7 @@ public class Shift {
     private long lunchduration;
     private int lunchdeduct;
     
-    public Shift(int id, String description, LocalTime start, LocalTime stop, int interval, int graceperiod, int dock, long shiftduration, LocalTime lunchstart, LocalTime lunchstop, long lunchduration, int lunchdeduct){
+    public Shift(int id, String description, LocalTime start, LocalTime stop, int interval, int graceperiod, int dock, LocalTime lunchstart, LocalTime lunchstop, int lunchdeduct){
         this.id = id;
         this.description = description;
         this.start = start;
@@ -25,10 +25,10 @@ public class Shift {
         this.interval = interval;
         this.graceperiod = graceperiod;
         this.dock = dock;
-        this.shiftduration = shiftduration;
+        this.shiftduration = 0;
         this.lunchstart = lunchstart;
         this.lunchstop = lunchstop;
-        this.lunchduration = lunchduration;
+        this.lunchduration = 0;
         this.lunchdeduct = lunchdeduct;
     }
     
@@ -113,7 +113,7 @@ public class Shift {
     }
     
     public void setLunchStop(LocalTime lunchstop){
-        this.lunchstop = lunchstart;
+        this.lunchstop = lunchstop;
     }
     
     public void setLunchDuration(){
@@ -129,7 +129,7 @@ public class Shift {
         StringBuilder shift = new StringBuilder();
         
         shift.append(description).append(": ").append(start).append(" - ").append(stop).append(" (").append(shiftduration).append(" minutes);");
-        shift.append(description).append(" Lunch: ").append(lunchstart).append(" - ").append(lunchstop).append(" (").append(lunchduration).append(" minutes);");
+        shift.append(" Lunch: ").append(lunchstart).append(" - ").append(lunchstop).append(" (").append(lunchduration).append(" minutes);");
         return (shift.toString());
     }
 }

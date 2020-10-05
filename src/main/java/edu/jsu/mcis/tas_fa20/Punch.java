@@ -41,4 +41,8 @@ public class Punch {
     public String getAdjustmentType(){
         return adjustmenttype;
     }
+    
+    public String printOriginalTimestamp(){
+        return null;
+    }
 }

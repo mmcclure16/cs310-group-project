@@ -1,6 +1,7 @@
 package edu.jsu.mcis.tas_fa20;
 
 import java.sql.*;
+import java.time.LocalTime;
 
 
 public class TASDatabase {
@@ -44,9 +45,8 @@ public class TASDatabase {
             System.err.println(e.toString());
         } 
     }
-    public Punch getPunch(String punchID){
+    public Punch getPunch(int punchID){
         try{
-            
         }catch (Exception e) {
             System.err.println(e.toString());
         } 
@@ -54,17 +54,59 @@ public class TASDatabase {
     }
     
     public Badge getBadge(String badgeID){
+        Badge b = new Badge(" ", " ");
         try{
+            Statement statement = conn.createStatement();
+            String query = "SELECT * FROM tas.badge WHERE id = '" + badgeID + "';";
+            ResultSet result = statement.executeQuery(query);
             
+            while(result.next())
+            {
+                String id;
+                String description;
+                id = result.getString("id");
+                description = result.getString("description");
+                b = new Badge(id, description);
+            }
+            return b;
         }catch (Exception e) {
             System.err.println(e.toString());
         } 
         return null;
     }
     
-    public Shift getShift(String shiftID){
+    public Shift getShift(int shiftID){
+        Shift s = new Shift(0, null, null, null, 0, 0, 0, null, null, 0);
         try{
+            Statement statement = conn.createStatement();
+            String query = "SELECT * FROM tas.shift WHERE id = '" + shiftID + "';";
+            ResultSet result = statement.executeQuery(query);
             
+            while(result.next()){
+                int id, interval, graceperiod, dock, lunchdeduct;;
+                String description;
+                LocalTime start, stop, lunchstart, lunchstop;;
+                Time T;
+
+                id = result.getInt("id");
+                description = result.getString("description");
+                T = result.getTime("start");
+                start = T.toLocalTime();
+                T = result.getTime("stop");
+                stop = T.toLocalTime();
+                interval = result.getInt("interval");
+                graceperiod = result.getInt("graceperiod");
+                dock = result.getInt("dock");
+                T = result.getTime("lunchstart");
+                lunchstart = T.toLocalTime();
+                T = result.getTime("lunchstop");
+                lunchstop = T.toLocalTime();
+                lunchdeduct = result.getInt("lunchdeduct");
+                s = new Shift(id, description, start, stop, interval, graceperiod, dock, lunchstart, lunchstop, lunchdeduct);
+            }
+            System.out.println(s.toString());
+            System.out.println("Shift 1: 07:00 - 15:30 (510 minutes); Lunch: 12:00 - 12:30 (30 minutes)");
+            return s;
         }catch (Exception e) {
             System.err.println(e.toString());
         } 
