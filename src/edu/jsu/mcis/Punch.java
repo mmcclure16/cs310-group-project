@@ -66,4 +66,8 @@ public class Punch {
         return adjustmentType;
     }
     
+    public String printOriginalTimestamp(){
+        return null;
+    }
+    
 }

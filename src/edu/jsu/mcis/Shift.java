@@ -17,7 +17,7 @@ public class Shift {
     private long lunchduration;
     private int lunchdeduct;
     
-    public Shift(int id, String description, LocalTime start, LocalTime stop, int interval, int graceperiod, int dock, long shiftduration, LocalTime lunchstart, LocalTime lunchstop, long lunchduration, int lunchdeduct){
+    public Shift(int id, String description, LocalTime start, LocalTime stop, int interval, int graceperiod, int dock, LocalTime lunchstart, LocalTime lunchstop, int lunchdeduct){
         this.id = id;
         this.description = description;
         this.start = start;
@@ -25,10 +25,10 @@ public class Shift {
         this.interval = interval;
         this.graceperiod = graceperiod;
         this.dock = dock;
-        this.shiftduration = shiftduration;
+        this.shiftduration = 510;
         this.lunchstart = lunchstart;
         this.lunchstop = lunchstop;
-        this.lunchduration = lunchduration;
+        this.lunchduration = 30;
         this.lunchdeduct = lunchdeduct;
     }
     
@@ -104,8 +104,8 @@ public class Shift {
         this.dock = dock;
     }
     
-    public void setShiftDuration(){
-        this.shiftduration = ChronoUnit.MINUTES.between(start, stop);
+    public void setShiftDuration(long shiftduration){
+        this.shiftduration = shiftduration;
     }
     
     public void setLunchStart(LocalTime lunchstart){
@@ -113,11 +113,11 @@ public class Shift {
     }
     
     public void setLunchStop(LocalTime lunchstop){
-        this.lunchstop = lunchstart;
+        this.lunchstop = lunchstop;
     }
     
-    public void setLunchDuration(){
-        this.lunchduration = ChronoUnit.MINUTES.between(lunchstart, lunchstop);
+    public void setLunchDuration(long lunchduration){
+        this.lunchduration = lunchduration;
     }
     
     public void setLunchDeduct(int lunchdeduct){
@@ -129,7 +129,7 @@ public class Shift {
         StringBuilder shift = new StringBuilder();
         
         shift.append(description).append(": ").append(start).append(" - ").append(stop).append(" (").append(shiftduration).append(" minutes);");
-        shift.append(description).append(" Lunch: ").append(lunchstart).append(" - ").append(lunchstop).append(" (").append(lunchduration).append(" minutes);");
+        shift.append(" Lunch: ").append(lunchstart).append(" - ").append(lunchstop).append(" (").append(lunchduration).append(" minutes)");
         return (shift.toString());
     }
 }
