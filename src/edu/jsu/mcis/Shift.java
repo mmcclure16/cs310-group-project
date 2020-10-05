@@ -1,38 +1,57 @@
 package edu.jsu.mcis;
 
+import java.util.*;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 
 public class Shift {
-    private int id;
+    
+    private byte id;
     private String description;
     private LocalTime start;
     private LocalTime stop;
-    private int interval;
-    private int graceperiod;
-    private int dock;
-    private long shiftduration;
-    private LocalTime lunchstart;
-    private LocalTime lunchstop;
-    private long lunchduration;
-    private int lunchdeduct;
+    private byte interval;
+    private byte gracePeriod;
+    private byte dock;
+    private LocalTime lunchStart;
+    private LocalTime lunchStop;
+    private short lunchDeduct;
     
-    public Shift(int id, String description, LocalTime start, LocalTime stop, int interval, int graceperiod, int dock, LocalTime lunchstart, LocalTime lunchstop, int lunchdeduct){
+    private long shiftDuration;
+    private long lunchDuration;
+    
+    public Shift (Map<String, Byte> byteParams, Map <String, LocalTime> localTimeParams, String description, short lunchDeduct) {
+        this(
+                byteParams.get("id"),
+                description,
+                localTimeParams.get("start"),
+                localTimeParams.get("stop"),
+                byteParams.get("interval"),
+                byteParams.get("gracePeriod"),
+                byteParams.get("dock"),
+                localTimeParams.get("lunchStart"),
+                localTimeParams.get("lunchStop"),
+                lunchDeduct
+        );
+    }
+    
+    private Shift(byte id, String description, LocalTime start, LocalTime stop, byte interval, byte gracePeriod, byte dock, LocalTime lunchStart, LocalTime lunchStop, short lonchDeduct) {
         this.id = id;
         this.description = description;
         this.start = start;
         this.stop = stop;
         this.interval = interval;
-        this.graceperiod = graceperiod;
+        this.gracePeriod = gracePeriod;
         this.dock = dock;
-        this.shiftduration = 510;
-        this.lunchstart = lunchstart;
-        this.lunchstop = lunchstop;
-        this.lunchduration = 30;
-        this.lunchdeduct = lunchdeduct;
+        this.lunchStart = lunchStart;
+        this.lunchStop = lunchStop;
+        this.lunchDeduct = lunchDeduct;
+        
+        // TO-DO: for Feature 4
+        shiftDuration = -1;
+        lunchDuration = -1;
     }
     
-    public int getID(){
+    public byte getID(){
         return id;
     }
     
@@ -48,35 +67,35 @@ public class Shift {
         return stop;
     }
     
-    public int getInterval(){
+    public byte getInterval(){
         return interval;
     }
     
-    public int getGracePeriod(){
-        return graceperiod;
+    public byte getGracePeriod(){
+        return gracePeriod;
     }
     
-    public int getDock(){
+    public byte getDock(){
         return dock;
     }
     
     public LocalTime getLunchStart(){
-        return lunchstart;
+        return lunchStart;
     }
     
     public LocalTime getLunchStop(){
-        return lunchstop;
+        return lunchStop;
     }
     
     public long getLunchDuration(){
-        return lunchduration;
+        return lunchDuration;
     }
     
-    public int getLunchDeduct(){
-        return lunchdeduct;
+    public short getLunchDeduct(){
+        return lunchDeduct;
     }
     
-    public void setID(int id){
+    public void setID(byte id){
         this.id = id;
     }
     
@@ -92,44 +111,44 @@ public class Shift {
         this.stop = stop;
     }
     
-    public void setInterval(int interval){
+    public void setInterval(byte interval){
         this.interval = interval;
     }
     
-    public void setGracePeriod(int graceperiod){
-        this.graceperiod = graceperiod;
+    public void setGracePeriod(byte graceperiod){
+        this.gracePeriod = graceperiod;
     }
     
-    public void setDock(int dock){
+    public void setDock(byte dock){
         this.dock = dock;
     }
     
-    public void setShiftDuration(long shiftduration){
-        this.shiftduration = shiftduration;
+    public void setShiftDuration(long shiftDuration){
+        this.shiftDuration = shiftDuration;
     }
     
-    public void setLunchStart(LocalTime lunchstart){
-        this.lunchstart = lunchstart;
+    public void setLunchStart(LocalTime lunchStart){
+        this.lunchStart = lunchStart;
     }
     
-    public void setLunchStop(LocalTime lunchstop){
-        this.lunchstop = lunchstop;
+    public void setLunchStop(LocalTime lunchStop){
+        this.lunchStop = lunchStop;
     }
     
-    public void setLunchDuration(long lunchduration){
-        this.lunchduration = lunchduration;
+    public void setLunchDuration(long lunchDuration){
+        this.lunchDuration = lunchDuration;
     }
     
-    public void setLunchDeduct(int lunchdeduct){
-        this.lunchdeduct = lunchdeduct;
+    public void setLunchDeduct(short lunchDeduct){
+        this.lunchDeduct = lunchDeduct;
     }
     
     @Override
     public String toString(){
         StringBuilder shift = new StringBuilder();
         
-        shift.append(description).append(": ").append(start).append(" - ").append(stop).append(" (").append(shiftduration).append(" minutes);");
-        shift.append(" Lunch: ").append(lunchstart).append(" - ").append(lunchstop).append(" (").append(lunchduration).append(" minutes)");
+        shift.append(description).append(": ").append(start).append(" - ").append(stop).append(" (").append(shiftDuration).append(" minutes);");
+        shift.append(" Lunch: ").append(lunchStart).append(" - ").append(lunchStop).append(" (").append(lunchDuration).append(" minutes)");
         return (shift.toString());
     }
 }
