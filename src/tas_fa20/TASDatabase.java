@@ -5,74 +5,76 @@ import java.sql.*;
 import java.time.LocalTime;
 
 public class TASDatabase {
+    
         Connection conn = null;
         PreparedStatement pstSelect = null, pstUpdate = null;
-        ResultSet resultset = null;
-        ResultSetMetaData metadata = null;
+        ResultSet resultSet = null;
+        ResultSetMetaData metaData = null;
 
         String query;
 
         boolean hasresults;
         int resultCount, columnCount = 0;
-    public TASDatabase(){
+        
+    public TASDatabase() {
+        
         try {
-
-            /* Identify the Server */
 
             String server = ("jdbc:mysql://localhost/tas");
             String username = "tasuser";
             String password = "CS488";
-            System.out.println("Connecting to " + server + "...");
-
-            /* Load the MySQL JDBC Driver */
 
             Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
 
-            /* Open Connection */
-
             conn = DriverManager.getConnection(server, username, password);
-
-            /* Test Connection */
-
-            if (conn.isValid(0)) {
-
-                /* Connection Open! */
-
-                System.out.println("Connected Successfully!");
-            }
             
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println(e.toString());
-        } 
-    }
-    public Punch getPunch(int punchID){
-        try{
-        }catch (Exception e) {
-            System.err.println(e.toString());
-        } 
-        return null;
+        }
+        
     }
     
-    public Badge getBadge(String badgeID){
-        Badge b = new Badge(" ", " ");
-        try{
-            Statement statement = conn.createStatement();
-            String query = "SELECT * FROM tas.badge WHERE id = '" + badgeID + "';";
-            ResultSet result = statement.executeQuery(query);
+    public Punch getPunch(int punchID) {
+        
+        try {
             
-            while(result.next())
-            {
-                String id;
-                String description;
-                id = result.getString("id");
-                description = result.getString("description");
-                b = new Badge(id, description);
-            }
-            return b;
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println(e.toString());
-        } 
+        }
+        
         return null;
+        
+    }
+    
+    public Badge getBadge(String badgeID) {
+        
+        try {
+            
+            query = "SELECT * FROM badge WHERE id = ?";
+            pstSelect = conn.prepareStatement(query);
+            pstSelect.setString(1, badgeID);
+            
+            resultSet = pstSelect.executeQuery();
+            
+            if (resultSet.next())
+            {
+                return new Badge(
+                        resultSet.getString("id"),
+                        resultSet.getString("description")
+                );
+            }
+            
+            else throw new Exception(
+                    "Query unsuccessful: badge entry with ID `" + badgeID
+                    + "` either does not exist or the database has failed."
+            );
+            
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+        
+        return null;
+        
     }
     
     public Shift getShift(int shiftID) {
@@ -83,39 +85,32 @@ public class TASDatabase {
         
         try {
             
-            String query = "SELECT * FROM shift WHERE id = ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setByte(1, shiftID);
+            query = "SELECT * FROM shift WHERE id = ?";
+            pstSelect = conn.prepareStatement(query);
+            pstSelect.setByte(1, shiftID);
             
-            ResultSet result = statement.executeQuery();
+            resultSet = pstSelect.executeQuery();
             
-            if (result.next()) {
+            if (resultSet.next()) {
                 
                 HashMap byteResults = new HashMap<String, Byte>();
                 HashMap localTimeResults = new HashMap<String, LocalTime>();
                 
                 byteResults.put("id", shiftID);
-                byteResults.put("interval", (byte)result.getShort("interval"));
-                byteResults.put("gracePeriod", (byte)result.getShort("graceperiod"));
-                byteResults.put("dock", (byte)result.getShort("dock"));
+                byteResults.put("interval", (byte)resultSet.getShort("interval"));
+                byteResults.put("gracePeriod", (byte)resultSet.getShort("graceperiod"));
+                byteResults.put("dock", (byte)resultSet.getShort("dock"));
                 
-                localTimeResults.put("start", result.getTime("start").toLocalTime());
-                localTimeResults.put("stop", result.getTime("stop").toLocalTime());
-                localTimeResults.put("lunchStart", result.getTime("lunchstart").toLocalTime());
-                localTimeResults.put("lunchStop", result.getTime("lunchstop").toLocalTime());
-                
-                Shift s = new Shift(
-                        byteResults,
-                        localTimeResults,
-                        result.getString("description"),
-                        result.getShort("lunchdeduct")
-                );
+                localTimeResults.put("start", resultSet.getTime("start").toLocalTime());
+                localTimeResults.put("stop", resultSet.getTime("stop").toLocalTime());
+                localTimeResults.put("lunchStart", resultSet.getTime("lunchstart").toLocalTime());
+                localTimeResults.put("lunchStop", resultSet.getTime("lunchstop").toLocalTime());
                 
                 return new Shift(
                         byteResults,
                         localTimeResults,
-                        result.getString("description"),
-                        result.getShort("lunchdeduct")
+                        resultSet.getString("description"),
+                        resultSet.getShort("lunchdeduct")
                 );
                 
             }
@@ -133,23 +128,27 @@ public class TASDatabase {
         
     }
     
-    public Shift getShift(Badge badge){
-        try{
+    public Shift getShift(Badge badge) {
+        
+        try {
             
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println(e.toString());
-        } 
+        }
+        
         return null;
+        
     }
     
-    public void close() throws SQLException{
-        try{
+    public void close() throws SQLException {
+        try {
+            
             conn.close();
             
-            if (resultset != null) {
+            if (resultSet != null) {
                     try {
-                        resultset.close();
-                        resultset = null;
+                        resultSet.close();
+                        resultSet = null;
                     } catch (Exception e) {
                     }
                 }
@@ -170,9 +169,10 @@ public class TASDatabase {
                     }
                 }
 
-            }catch (Exception e) {
+            } catch (Exception e) {
             System.err.println(e.toString());
-        }          
+            
+        }
     }
 }
 
