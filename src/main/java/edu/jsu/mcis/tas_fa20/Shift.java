@@ -1,7 +1,8 @@
 package edu.jsu.mcis.tas_fa20;
 
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
+import java.time.temporal.*;
+
 
 public class Shift {
     private int id;
@@ -11,10 +12,10 @@ public class Shift {
     private int interval;
     private int graceperiod;
     private int dock;
-    private long shiftduration;
+    private int shiftduration;
     private LocalTime lunchstart;
     private LocalTime lunchstop;
-    private long lunchduration;
+    private int lunchduration;
     private int lunchdeduct;
     
     public Shift(int id, String description, LocalTime start, LocalTime stop, int interval, int graceperiod, int dock, LocalTime lunchstart, LocalTime lunchstop, int lunchdeduct){
@@ -25,10 +26,10 @@ public class Shift {
         this.interval = interval;
         this.graceperiod = graceperiod;
         this.dock = dock;
-        this.shiftduration = 510;
+        this.shiftduration = ((int)(ChronoUnit.MINUTES.between(start, stop)));
         this.lunchstart = lunchstart;
         this.lunchstop = lunchstop;
-        this.lunchduration = 30;
+        this.lunchduration = ((int)(ChronoUnit.MINUTES.between(lunchstart, lunchstop)));
         this.lunchdeduct = lunchdeduct;
     }
     
@@ -104,7 +105,7 @@ public class Shift {
         this.dock = dock;
     }
     
-    public void setShiftDuration(long shiftduration){
+    public void setShiftDuration(int shiftduration){
         this.shiftduration = shiftduration;
     }
     
@@ -116,7 +117,7 @@ public class Shift {
         this.lunchstop = lunchstop;
     }
     
-    public void setLunchDuration(long lunchduration){
+    public void setLunchDuration(int lunchduration){
         this.lunchduration = lunchduration;
     }
     

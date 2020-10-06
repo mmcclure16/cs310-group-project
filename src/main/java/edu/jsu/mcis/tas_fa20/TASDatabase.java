@@ -76,7 +76,8 @@ public class TASDatabase {
     }
     
     public Shift getShift(int shiftID){
-        Shift s = new Shift(0, null, null, null, 0, 0, 0, null, null, 0);
+        LocalTime x =  LocalTime.of(0, 0, 0, 0);
+        Shift s = new Shift(0, null, x, x, 0, 0, 0, x, x, 0);
         try{
             Statement statement = conn.createStatement();
             String query = "SELECT * FROM tas.shift WHERE id = '" + shiftID + "';";
