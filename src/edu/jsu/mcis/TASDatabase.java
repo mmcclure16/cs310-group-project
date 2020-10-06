@@ -83,9 +83,11 @@ public class TASDatabase {
         
         try {
             
-            Statement statement = conn.createStatement();
-            String query = "SELECT * FROM tas.shift WHERE id = '" + shiftID + "';";
-            ResultSet result = statement.executeQuery(query);
+            String query = "SELECT * FROM shift WHERE id = ?";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setByte(1, shiftID);
+            
+            ResultSet result = statement.executeQuery();
             
             if (result.next()) {
                 
@@ -93,14 +95,21 @@ public class TASDatabase {
                 HashMap localTimeResults = new HashMap<String, LocalTime>();
                 
                 byteResults.put("id", shiftID);
-                byteResults.put("interval", result.getByte("interval"));
-                byteResults.put("gracePeriod", result.getByte("graceperiod"));
-                byteResults.put("dock", result.getByte("dock"));
+                byteResults.put("interval", (byte)result.getShort("interval"));
+                byteResults.put("gracePeriod", (byte)result.getShort("graceperiod"));
+                byteResults.put("dock", (byte)result.getShort("dock"));
                 
                 localTimeResults.put("start", result.getTime("start").toLocalTime());
                 localTimeResults.put("stop", result.getTime("stop").toLocalTime());
                 localTimeResults.put("lunchStart", result.getTime("lunchstart").toLocalTime());
                 localTimeResults.put("lunchStop", result.getTime("lunchstop").toLocalTime());
+                
+                Shift s = new Shift(
+                        byteResults,
+                        localTimeResults,
+                        result.getString("description"),
+                        result.getShort("lunchdeduct")
+                );
                 
                 return new Shift(
                         byteResults,
@@ -111,7 +120,10 @@ public class TASDatabase {
                 
             }
             
-            else throw new Exception("Query unsuccessful: shift with ID " + shiftID + " either does not exist or the database failed.");
+            else throw new Exception(
+                    "Query unsuccessful: shift entry with ID `" + shiftID
+                    + "` either does not exist or the database has failed."
+            );
             
         } catch (Exception e) {
             System.err.println(e.toString());
