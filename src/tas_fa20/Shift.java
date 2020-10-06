@@ -2,6 +2,7 @@ package tas_fa20;
 
 import java.util.*;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 
 public class Shift {
     
@@ -45,10 +46,9 @@ public class Shift {
         this.lunchStart = lunchStart;
         this.lunchStop = lunchStop;
         this.lunchDeduct = lunchDeduct;
-        
-        // TO-DO: for Feature 4
-        shiftDuration = -1;
-        lunchDuration = -1;
+
+        shiftDuration = ChronoUnit.MINUTES.between(start, stop);
+        lunchDuration = ChronoUnit.MINUTES.between(lunchStart, lunchStop);
     }
     
     public byte getID(){
