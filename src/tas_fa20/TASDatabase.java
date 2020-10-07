@@ -43,7 +43,9 @@ public class TASDatabase {
         
         try {
             
-            query = "SELECT *, UNIX_TIMESTAMP(originaltimestamp)*1000 AS originaltimestamp_unix FROM punch WHERE id = ?";
+            query = "SELECT id, terminalid, badgeid, punchtypeid,"
+                    + " UNIX_TIMESTAMP(originaltimestamp)*1000 AS originaltimestamp_unix_mili"
+                    + " FROM punch WHERE id = ?";
             pstSelect = conn.prepareStatement(query);
             pstSelect.setInt(1, punchID);
             
@@ -56,23 +58,19 @@ public class TASDatabase {
                 byteResults.put("terminalID", (byte)resultSet.getShort("terminalid"));
                 byteResults.put("punchTypeID", (byte)resultSet.getShort("punchtypeiD"));
                 
-                Punch p =  new Punch(
-                        resultSet.getInt("id"),
-                        resultSet.getString("badgeid"),
-                        byteResults,
-                        resultSet.getLong("originaltimestamp_unix")
-                );
-                
-                System.out.println(p);
-                
                 return new Punch(
                         resultSet.getInt("id"),
                         resultSet.getString("badgeid"),
                         byteResults,
-                        resultSet.getLong("originaltimestamp_unix")
+                        resultSet.getLong("originaltimestamp_unix_mili")
                 );
                 
             }
+            
+            else throw new Exception(
+                    "Query unsuccessful: punch entry with ID `" + punchID
+                    + "` either does not exist or the database has failed."
+            );
             
         } catch (Exception e) {
             System.err.println(e.toString());
@@ -93,7 +91,7 @@ public class TASDatabase {
         
         try {
             
-            query = "SELECT * FROM badge WHERE id = ?";
+            query = "SELECT id, description FROM badge WHERE id = ?";
             pstSelect = conn.prepareStatement(query);
             pstSelect.setString(1, badgeID);
             
@@ -177,7 +175,8 @@ public class TASDatabase {
         
         try {
             
-            query = "SELECT shift.* FROM shift LEFT JOIN employee ON employee.shiftid=shift.id WHERE employee.badgeid = ?";
+            query = "SELECT shift.* FROM shift LEFT JOIN employee ON "
+                    + "employee.shiftid=shift.id WHERE employee.badgeid = ?";
             pstSelect = conn.prepareStatement(query);
             pstSelect.setString(1, badge.getID());
             
