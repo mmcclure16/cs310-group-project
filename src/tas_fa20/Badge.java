@@ -1,4 +1,4 @@
-package edu.jsu.mcis.tas_fa20;
+package tas_fa20;
 
 
 public class Badge {
