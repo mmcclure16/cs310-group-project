@@ -1,4 +1,4 @@
-package edu.jsu.mcis.tas_fa20;
+package tas_fa20;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
