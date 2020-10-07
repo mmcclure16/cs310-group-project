@@ -1,6 +1,7 @@
 package tas_fa20;
 
 import java.util.*;
+import java.text.SimpleDateFormat;
 
 public class Punch {
     
@@ -9,6 +10,11 @@ public class Punch {
     private String badgeID;
     private Long originalTimeStamp;
     private byte punchTypeID;
+    
+    private String punchTypeTitle;
+    
+    private String timeStampString;
+    private static final SimpleDateFormat timeStampFormat = new SimpleDateFormat("EEE MM/dd/yyyy HH:mm:ss");
     
     private String adjustmentType;
     
@@ -39,6 +45,10 @@ public class Punch {
         this.originalTimeStamp = originalTimeStamp;
         this.punchTypeID = punchTypeID;
         
+        buildPunchTypeTitle();
+        
+        buildTimeStampString();
+        
         adjustmentType = null;
     }
     
@@ -66,8 +76,36 @@ public class Punch {
         return adjustmentType;
     }
     
-    public String printOriginalTimestamp(){
-        return null;
+    private void buildPunchTypeTitle() {
+        
+        switch(punchTypeID) {
+            
+            case 0:
+                punchTypeTitle = "CLOCKED OUT";
+                break;
+                
+            case 1:
+                punchTypeTitle = "CLOCKED IN";
+                break;
+                
+            case 2:
+                punchTypeTitle = "TIMED OUT";
+                break;
+                
+        }
+        
+    }
+    
+    private void buildTimeStampString() {
+        timeStampString = (timeStampFormat.format(new Date(originalTimeStamp))).toUpperCase();
+    }
+    
+    public String printOriginalTimestamp() {
+        StringBuilder punch = new StringBuilder();
+        
+        punch.append('#').append(badgeID).append(' ').append(punchTypeTitle);
+        punch.append(": ").append(timeStampString);
+        return (punch.toString());
     }
     
 }
