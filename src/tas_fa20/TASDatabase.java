@@ -43,6 +43,37 @@ public class TASDatabase {
         
         try {
             
+            query = "SELECT *, UNIX_TIMESTAMP(originaltimestamp)*1000 AS originaltimestamp_unix FROM punch WHERE id = ?";
+            pstSelect = conn.prepareStatement(query);
+            pstSelect.setInt(1, punchID);
+            
+            resultSet = pstSelect.executeQuery();
+            
+            if (resultSet.next()) {
+        
+                HashMap byteResults = new HashMap<String, Byte>();
+                
+                byteResults.put("terminalID", (byte)resultSet.getShort("terminalid"));
+                byteResults.put("punchTypeID", (byte)resultSet.getShort("punchtypeiD"));
+                
+                Punch p =  new Punch(
+                        resultSet.getInt("id"),
+                        resultSet.getString("badgeid"),
+                        byteResults,
+                        resultSet.getLong("originaltimestamp_unix")
+                );
+                
+                System.out.println(p);
+                
+                return new Punch(
+                        resultSet.getInt("id"),
+                        resultSet.getString("badgeid"),
+                        byteResults,
+                        resultSet.getLong("originaltimestamp_unix")
+                );
+                
+            }
+            
         } catch (Exception e) {
             System.err.println(e.toString());
         }
@@ -70,10 +101,12 @@ public class TASDatabase {
             
             if (resultSet.next())
             {
+                
                 return new Badge(
                         resultSet.getString("id"),
                         resultSet.getString("description")
                 );
+                
             }
             
             else throw new Exception(
