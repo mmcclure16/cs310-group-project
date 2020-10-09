@@ -35,9 +35,9 @@ public class TASDatabase {
     }
     
     /**
-     * 
+     * Method for retrieving punch entry from a given punch ID
      * @param punchID
-     * @return 
+     * @return Punch object representing punch info linked to the given punch ID
      */
     public Punch getPunch(int punchID) {
         
