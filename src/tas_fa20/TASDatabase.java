@@ -58,12 +58,14 @@ public class TASDatabase {
                 byteResults.put("terminalID", (byte)resultSet.getShort("terminalid"));
                 byteResults.put("punchTypeID", (byte)resultSet.getShort("punchtypeiD"));
                 
-                return new Punch(
+                Punch ret =  new Punch(
                         resultSet.getInt("id"),
                         resultSet.getString("badgeid"),
                         byteResults,
                         resultSet.getLong("originaltimestamp_unix_mili")
                 );
+                
+                return ret;
                 
             }
             
@@ -100,10 +102,12 @@ public class TASDatabase {
             if (resultSet.next())
             {
                 
-                return new Badge(
+                Badge ret =  new Badge(
                         resultSet.getString("id"),
                         resultSet.getString("description")
                 );
+                
+                return ret;
                 
             }
             
@@ -148,7 +152,13 @@ public class TASDatabase {
             
             resultSet = pstSelect.executeQuery();
             
-            if (resultSet.next()) return populateShift(resultSet);
+            if (resultSet.next()) {
+                
+                Shift ret = populateShift(resultSet);
+                
+                return ret;
+                
+            }
             
             else throw new Exception(
                     "Query unsuccessful: shift entry with ID `" + shiftID
@@ -182,7 +192,13 @@ public class TASDatabase {
             
             resultSet = pstSelect.executeQuery();
             
-            if (resultSet.next()) return populateShift(resultSet);
+            if (resultSet.next()) {
+                
+                Shift ret = populateShift(resultSet);
+                
+                return ret;
+                
+            }
             
             else throw new Exception(
                     "Query unsuccessful: either no employee with badge ID `" + badge.getID()
