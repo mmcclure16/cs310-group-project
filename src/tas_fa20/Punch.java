@@ -14,7 +14,7 @@ public class Punch {
     private String punchTypeTitle;
     
     private String timeStampString;
-    private static final SimpleDateFormat timeStampFormat = new SimpleDateFormat("EEE MM/dd/yyyy HH:mm:ss");
+    private final SimpleDateFormat timeStampFormat = new SimpleDateFormat("EEE MM/dd/yyyy HH:mm:ss");
     
     private String adjustmentType;
     
@@ -46,7 +46,6 @@ public class Punch {
         this.punchTypeID = punchTypeID;
         
         buildPunchTypeTitle();
-        
         buildTimeStampString();
         
         adjustmentType = null;
@@ -78,26 +77,50 @@ public class Punch {
     
     private void buildPunchTypeTitle() {
         
-        switch(punchTypeID) {
+        try {
             
-            case 0:
-                punchTypeTitle = "CLOCKED OUT";
-                break;
-                
-            case 1:
-                punchTypeTitle = "CLOCKED IN";
-                break;
-                
-            case 2:
-                punchTypeTitle = "TIMED OUT";
-                break;
-                
+            switch(punchTypeID) {
+
+                case 0:
+                    punchTypeTitle = "CLOCKED OUT";
+                    break;
+
+                case 1:
+                    punchTypeTitle = "CLOCKED IN";
+                    break;
+
+                case 2:
+                    punchTypeTitle = "TIMED OUT";
+                    break;
+                default:
+                    throw new Exception("Invalid or no `punchTypeID` "
+                            + "specified.");
+
+            }
+            
+        } catch (Exception e) {
+            System.err.println(e.toString());
         }
         
     }
     
     private void buildTimeStampString() {
-        timeStampString = (timeStampFormat.format(new Date(originalTimeStamp))).toUpperCase();
+        
+        try {
+            
+            if (originalTimeStamp != null) {
+                timeStampString = (timeStampFormat.format(new Date(originalTimeStamp))).toUpperCase();
+            }
+            
+            else {
+                throw new Exception("`originalTimeStamp` has not been "
+                        + "intitalized.");
+            }
+            
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+        
     }
     
     public String printOriginalTimestamp() {
