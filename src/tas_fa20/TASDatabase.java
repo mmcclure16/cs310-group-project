@@ -154,7 +154,7 @@ public class TASDatabase {
             
             if (resultSet.next()) {
                 
-                Shift ret = populateShift(resultSet);
+                Shift ret = makeShift(resultSet);
                 
                 return ret;
                 
@@ -194,7 +194,7 @@ public class TASDatabase {
             
             if (resultSet.next()) {
                 
-                Shift ret = populateShift(resultSet);
+                Shift ret = makeShift(resultSet);
                 
                 return ret;
                 
@@ -214,13 +214,13 @@ public class TASDatabase {
     }
     
     /**
-     * Generic method designed to populate a Shift object from a "SELECT * FROM
+     * Generic method designed to create a new Shift object from a "SELECT * FROM
      * shift"-derived ResultSet
      * @param result Query result containing shift information
      * @return New Shift object containing the ResultSet's data, if the
      * ResultSet contains proper information; null otherwise
      */
-    private Shift populateShift(ResultSet result) {
+    private Shift makeShift(ResultSet result) {
         
         HashMap byteResults = new HashMap<String, Byte>();
         HashMap localTimeResults = new HashMap<String, LocalTime>();
