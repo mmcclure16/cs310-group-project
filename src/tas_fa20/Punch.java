@@ -19,7 +19,7 @@ public class Punch {
     private String adjustmentType;
     
     
-    /* Constructors for new Punch objects */
+    /* Constructors for new punch */
     
     public Punch(Badge badge, int terminalID, int punchtypeID)
     {
@@ -44,7 +44,7 @@ public class Punch {
     }
     
     
-    /* Constructors for existing Punch objects */
+    /* Constructors for existing punch */
     
     public Punch(int id, String badgeID, Map<String, Byte> byteParams, Long originalTimeStamp) {
         this(
@@ -74,42 +74,27 @@ public class Punch {
         adjustmentType = null;
     }
     
-    public int getID(){
+    public int getID() {
         return id;
     }
     
-    public int getTerminalID(){
+    public byte getTerminalID() {
         return terminalID;
     }
     
-    public int getTerminalid(){
-        return terminalID;
-    }
-    
-    public String getBadgeID(){
+    public String getBadgeID() {
         return badgeID;
     }
     
-    public String getBadgeid(){
-        return badgeID;
-    }
-    public Long getOriginalTimeStamp(){
+    public Long getOriginalTimeStamp() {
         return originalTimeStamp;
     }
     
-    public Long getOriginaltimestamp(){
-        return originalTimeStamp;
-    }
-    
-    public int getPunchTypeID(){
+    public byte getPunchTypeID() {
         return punchTypeID;
     }
     
-    public int getPunchtypeid(){
-        return punchTypeID;
-    }
-    
-    public String getAdjustmentType(){
+    public String getAdjustmentType() {
         return adjustmentType;
     }
     
@@ -167,6 +152,25 @@ public class Punch {
         punch.append('#').append(badgeID).append(' ').append(punchTypeTitle);
         punch.append(": ").append(timeStampString);
         return (punch.toString());
+    }
+    
+    
+    /* Alternatively titled method aliases for Feature Test compatability */
+    
+    public short getTerminalid() {
+        return util.UnsignedByteHandler.getAsShort(getTerminalID());
+    }
+    
+    public String getBadgeid() {
+        return getBadgeID();
+    }
+    
+    public Long getOriginaltimestamp() {
+        return  getOriginalTimeStamp();
+    }
+    
+    public short getPunchtypeid() {
+        return util.UnsignedByteHandler.getAsShort(getPunchTypeID());
     }
     
 }

@@ -94,17 +94,22 @@ public class TASDatabase {
             
             query = "INSERT INTO punch (terminalid, badgeid, originaltimestamp, punchtypeid) VALUES(?, ?, FROM_UNIXTIME(?/1000), ?)";
             pstUpdate = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            pstUpdate.setInt(1, p.getTerminalID());
+            pstUpdate.setShort(1, util.UnsignedByteHandler.getAsShort(p.getTerminalID()));
             pstUpdate.setString(2, p.getBadgeID());
             pstUpdate.setLong(3, p.getOriginalTimeStamp());
-            pstUpdate.setInt(4, p.getPunchTypeID());
+            pstUpdate.setShort(4, util.UnsignedByteHandler.getAsShort(p.getPunchTypeID()));
             
             pstUpdate.execute();
             
             resultSet = pstUpdate.getGeneratedKeys();
-            int res = resultSet.getInt(1);
             
-            if (resultSet.next())  return res;
+            if (resultSet.next()) {
+                
+                int res = resultSet.getInt(1);
+            
+                return res;
+                
+            }
             
             else throw new Exception(
                     "Insertion unsuccessful. Failed to insert Punch: \n"
