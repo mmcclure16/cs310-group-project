@@ -28,6 +28,13 @@ public class Punch {
         );
     }
     
+    public Punch(Badge badge, int terminalid, int punchtypeid)
+    {
+        badgeID = badge.getID();
+        terminalID = (byte)terminalid;
+        punchTypeID = (byte)punchtypeid;
+    }
+    
     public Punch(int id, String badgeID, Map<String, Byte> byteParams, Long originalTimeStamp) {
         this(
                 id,
@@ -59,15 +66,30 @@ public class Punch {
         return terminalID;
     }
     
+    public int getTerminalid(){
+        return terminalID;
+    }
+    
     public String getBadgeID(){
         return badgeID;
     }
     
+    public String getBadgeid(){
+        return badgeID;
+    }
     public Long getOriginalTimeStamp(){
         return originalTimeStamp;
     }
     
+    public Long getOriginaltimestamp(){
+        return originalTimeStamp;
+    }
+    
     public int getPunchTypeID(){
+        return punchTypeID;
+    }
+    
+    public int getPunchtypeid(){
         return punchTypeID;
     }
     
