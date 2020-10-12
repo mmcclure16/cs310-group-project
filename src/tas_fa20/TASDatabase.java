@@ -97,9 +97,7 @@ public class TASDatabase {
                 
                 if(resultSet.next())
                 {
-                    String id;
-                    id = resultSet.getInt("id");
-                    
+                    return resultSet.getInt("id");                   
                 }
             }
         }
