@@ -82,28 +82,41 @@ public class TASDatabase {
         
     }
     
+    /**
+     * Inserts an entry into the `punch` table based off a given `Punch` object
+     * @param p The `Punch` object whose information should be inserted into
+     * the database
+     * @return The ID of the inserted punch record
+     */
     public int insertPunch(Punch p)
     {
         try {
-            query ="INSERT INTO tas.punch (terminalid, badgeid, punchtypeid) VALUES ("+p.getTerminalid()+", "+p.getBadgeid()+", "+p.getPunchtypeid()+");";
-            pstSelect = conn.prepareStatement(query);
-            resultSet = pstSelect.executeQuery(query);
             
-            while(resultSet.next())
-            {
-                query ="SELECT id FROM tas.punch WHERE terminalid = "+p.getTerminalid()+" AND badgeid = "+p.getBadgeid()+" AND punchtypeid = "+p.getPunchtypeid()+");";
-                pstSelect = conn.prepareStatement(query);
-                resultSet = pstSelect.executeQuery(query);
-                
-                if(resultSet.next())
-                {
-                    return resultSet.getInt("id");                   
-                }
-            }
-        }
-        catch (Exception e) {
+            query = "INSERT INTO punch (terminalid, badgeid, originaltimestamp, punchtypeid) VALUES(?, ?, FROM_UNIXTIME(?/1000), ?)";
+            pstUpdate = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            pstUpdate.setInt(1, p.getTerminalID());
+            pstUpdate.setString(2, p.getBadgeID());
+            pstUpdate.setLong(3, p.getOriginalTimeStamp());
+            pstUpdate.setInt(4, p.getPunchTypeID());
+            
+            pstUpdate.execute();
+            
+            resultSet = pstUpdate.getGeneratedKeys();
+            int res = resultSet.getInt(1);
+            
+            if (resultSet.next())  return res;
+            
+            else throw new Exception(
+                    "Insertion unsuccessful. Failed to insert Punch: \n"
+                    + p.printOriginalTimestamp() // PLACE HOLDER: should be `p.toString()` once it is implemented
+            );
+                    
+        } catch (Exception e) {
             System.err.println(e.toString());
         }
+        
+        return 0;
+        
     }
     
     /**
