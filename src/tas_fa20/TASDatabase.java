@@ -82,6 +82,32 @@ public class TASDatabase {
         
     }
     
+    public int insertPunch(Punch p)
+    {
+        try {
+            query ="INSERT INTO tas.punch (terminalid, badgeid, punchtypeid) VALUES ("+p.getTerminalid()+", "+p.getBadgeid()+", "+p.getPunchtypeid()+");";
+            pstSelect = conn.prepareStatement(query);
+            resultSet = pstSelect.executeQuery(query);
+            
+            while(resultSet.next())
+            {
+                query ="SELECT id FROM tas.punch WHERE terminalid = "+p.getTerminalid()+" AND badgeid = "+p.getBadgeid()+" AND punchtypeid = "+p.getPunchtypeid()+");";
+                pstSelect = conn.prepareStatement(query);
+                resultSet = pstSelect.executeQuery(query);
+                
+                if(resultSet.next())
+                {
+                    String id;
+                    id = resultSet.getInt("id");
+                    
+                }
+            }
+        }
+        catch (Exception e) {
+            System.err.println(e.toString());
+        }
+    }
+    
     /**
      * Method for retrieving badge info and populating a Badge object from a
      * given badge ID
