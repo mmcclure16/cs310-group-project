@@ -18,6 +18,21 @@ public class Punch {
     
     private String adjustmentType;
     
+    
+    /* Constructors for new Punch objects */
+    
+    public Punch(Badge badge, int terminalID, int punchtypeID)
+    {
+        this(
+            0,
+            (byte)terminalID,
+            badge.getID(),
+            null,
+            (byte)punchtypeID
+        );
+    }
+    
+    
     public Punch(String badgeID, Map<String, Byte> byteParams) {
         this(
                 0,
@@ -28,12 +43,8 @@ public class Punch {
         );
     }
     
-    public Punch(Badge badge, int terminalid, int punchtypeid)
-    {
-        badgeID = badge.getID();
-        terminalID = (byte)terminalid;
-        punchTypeID = (byte)punchtypeid;
-    }
+    
+    /* Constructors for existing Punch objects */
     
     public Punch(int id, String badgeID, Map<String, Byte> byteParams, Long originalTimeStamp) {
         this(
@@ -44,6 +55,9 @@ public class Punch {
                 byteParams.get("punchTypeID")
         );
     }
+    
+    
+    /* Master Constructors */
     
     private Punch(int id, byte terminalID, String badgeID, Long originalTimeStamp, byte punchTypeID) {
         this.id = id;
