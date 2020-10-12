@@ -63,8 +63,10 @@ public class Punch {
         this.id = id;
         this.terminalID = terminalID;
         this.badgeID = badgeID;
-        this.originalTimeStamp = originalTimeStamp;
         this.punchTypeID = punchTypeID;
+        
+        // set time to system if not pre-provided
+        this.originalTimeStamp = (originalTimeStamp != null ? originalTimeStamp : System.currentTimeMillis());
         
         buildPunchTypeTitle();
         buildTimeStampString();
