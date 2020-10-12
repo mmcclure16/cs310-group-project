@@ -1,9 +1,12 @@
+/**
+ * A "wrapper class" designed to represent bytes as unsigned (0-255)
+ * 
+ * Implemented to allow Java's native `byte` type (signed) to accurately
+ * interact with systems expecting bytes with an unsigned range
+ */
+
 package util;
 
-
-/**
- * A "wrapper class" designed to represent bytes as unsigned (0-255) 
- */
 public class UnsignedByteHandler {
     
     private byte b;
