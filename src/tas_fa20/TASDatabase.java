@@ -2,8 +2,7 @@ package tas_fa20;
 
 import java.util.*;
 import java.sql.*;
-import java.time.LocalTime;
-import java.text.SimpleDateFormat;
+import java.time.*;
 
 public class TASDatabase {
     
@@ -128,17 +127,27 @@ public class TASDatabase {
     public ArrayList<Punch> getDailyPunchList(Badge badge, long ts)
     {
         try {
-            ArrayList<Punch> Punch = new ArrayList<Punch>();
-            SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy-mm-dd");
-            String s_ts = (timeStampFormat.format(new java.util.Date(ts)));
+            
+            LocalDate parsedDate = Instant.ofEpochMilli(ts).atZone(ZoneId.systemDefault()).toLocalDate();
+            ArrayList<Punch> punches = new ArrayList<Punch>();
+            
 
-            query = "SELECT * FROM PUNCH WHERE badgeid = ? AND DATE(originaltimestamp) == " + s_ts + ";";
-            pstSelect = conn.prepareStatement(query);     
+            /* First query:
+            *  Get all punches made by this employee on the given date
+            */
+            
+            query = "SELECT id, terminalid, badgeid, punchtypeid,"
+                    + " UNIX_TIMESTAMP(originaltimestamp)*1000 AS originaltimestamp_unix_mili"
+                    + " FROM punch WHERE (originaltimestamp BETWEEN '"
+                    + parsedDate + " 00:00:00' AND '" + parsedDate + " 23:59:59') AND badgeid = ?;";
+            pstSelect = conn.prepareStatement(query);
+            pstSelect.setString(1, badge.getID());
+            
             resultSet = pstSelect.executeQuery();
         
-            while(resultSet.next()){
-                HashMap byteResults = new HashMap<String, Byte>();
+            while (resultSet.next()) {
                 
+                HashMap byteResults = new HashMap<String, Byte>();
                 byteResults.put("terminalID", (byte)resultSet.getShort("terminalid"));
                 byteResults.put("punchTypeID", (byte)resultSet.getShort("punchtypeiD"));
                 
@@ -148,15 +157,58 @@ public class TASDatabase {
                         byteResults,
                         resultSet.getLong("originaltimestamp_unix_mili")
                 );
-                Punch.add(ret);
+                
+                punches.add(ret);
+                
             }
+            
+            
+            /* Second query:
+            *  After the given date, if this employees's very next punch
+            *  indicates the end of a shift, this means they are completing a
+            *  shift that has carried over from the given date; it therefore
+            *  should be logged with the given date's punches
+            */
+            
+            query = "SELECT id, terminalid, badgeid, punchtypeid,"
+                    + " UNIX_TIMESTAMP(originaltimestamp)*1000 AS originaltimestamp_unix_mili"
+                    + " FROM ("
+                        + "(SELECT * FROM punch WHERE badgeid = ? AND (originaltimestamp > '"
+                        + parsedDate + " 23:59:59') ORDER BY originaltimestamp ASC LIMIT 1)"
+                    + ") tmp WHERE punchtypeid = 0 OR punchtypeid = 2";
+
+            pstSelect = conn.prepareStatement(query);
+            pstSelect.setString(1, badge.getID());
+            
+            resultSet = pstSelect.executeQuery();
+        
+            if (resultSet.next()) {
+                
+                HashMap byteResults = new HashMap<String, Byte>();
+                byteResults.put("terminalID", (byte)resultSet.getShort("terminalid"));
+                byteResults.put("punchTypeID", (byte)resultSet.getShort("punchtypeiD"));
+                
+                Punch ret =  new Punch(
+                        resultSet.getInt("id"),
+                        resultSet.getString("badgeid"),
+                        byteResults,
+                        resultSet.getLong("originaltimestamp_unix_mili")
+                );
+                
+                punches.add(ret);
+                
+            }
+            
+            return punches;
+            
         }
         
         catch (Exception e) {
             System.err.println(e.toString());
         }
-         
+        
         return null;
+        
     }
     
     /**
