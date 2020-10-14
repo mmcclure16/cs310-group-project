@@ -52,18 +52,8 @@ public class TASDatabase {
             resultSet = pstSelect.executeQuery();
             
             if (resultSet.next()) {
-        
-                HashMap byteResults = new HashMap<String, Byte>();
                 
-                byteResults.put("terminalID", (byte)resultSet.getShort("terminalid"));
-                byteResults.put("punchTypeID", (byte)resultSet.getShort("punchtypeiD"));
-                
-                Punch ret =  new Punch(
-                        resultSet.getInt("id"),
-                        resultSet.getString("badgeid"),
-                        byteResults,
-                        resultSet.getLong("originaltimestamp_unix_mili")
-                );
+                Punch ret =  makePunch(resultSet);
                 
                 return ret;
                 
@@ -82,56 +72,13 @@ public class TASDatabase {
         
     }
     
-    /**
-     * Inserts an entry into the `punch` table based off a given `Punch` object
-     * @param p The `Punch` object whose information should be inserted into
-     * the database
-     * @return The ID of the inserted punch record
-     */
-    public int insertPunch(Punch p)
-    {
-        try {
-            
-            query = "INSERT INTO punch (terminalid, badgeid, originaltimestamp, punchtypeid) VALUES(?, ?, FROM_UNIXTIME(?/1000), ?)";
-            pstUpdate = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            pstUpdate.setShort(1, util.UnsignedByteHandler.getAsShort(p.getTerminalID()));
-            pstUpdate.setString(2, p.getBadgeID());
-            pstUpdate.setLong(3, p.getOriginalTimeStamp());
-            pstUpdate.setShort(4, util.UnsignedByteHandler.getAsShort(p.getPunchTypeID()));
-            
-            pstUpdate.execute();
-            
-            resultSet = pstUpdate.getGeneratedKeys();
-            
-            if (resultSet.next()) {
-                
-                int res = resultSet.getInt(1);
-            
-                return res;
-                
-            }
-            
-            else throw new Exception(
-                    "Insertion unsuccessful. Failed to insert Punch: \n"
-                    + p.printOriginalTimestamp() // PLACE HOLDER: should be `p.toString()` once it is implemented
-            );
-                    
-        } catch (Exception e) {
-            System.err.println(e.toString());
-        }
-        
-        return 0;
-        
-    }
-    
-    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts)
-    {
+    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts) {
         try {
             
             LocalDate parsedDate = Instant.ofEpochMilli(ts).atZone(ZoneId.systemDefault()).toLocalDate();
-            ArrayList<Punch> punches = new ArrayList<Punch>();
+            ArrayList<Punch> punches = new ArrayList<>();
 
-
+            
             /* First query:
             *  Get all punches made by this employee on the given date
             */
@@ -144,23 +91,22 @@ public class TASDatabase {
             pstSelect.setString(1, badge.getID());
             
             resultSet = pstSelect.executeQuery();
-        
-            while (resultSet.next()) {
+            
+            
+            // prime-START: ensure there are results before trying to loop through them
+            
+            if (resultSet.next()) punches.add(makePunch(resultSet));
+            
+            else throw new Exception(
+                    "Query unsuccessful: either no punches made by the employee "
+                    + "with the badge id `" + badge.getID() + "` exist, or the "
+                    + "database has failed."
+            );
+             
+            // prime-END
                 
-                HashMap byteResults = new HashMap<String, Byte>();
-                byteResults.put("terminalID", (byte)resultSet.getShort("terminalid"));
-                byteResults.put("punchTypeID", (byte)resultSet.getShort("punchtypeiD"));
-                
-                Punch ret =  new Punch(
-                        resultSet.getInt("id"),
-                        resultSet.getString("badgeid"),
-                        byteResults,
-                        resultSet.getLong("originaltimestamp_unix_mili")
-                );
-                
-                punches.add(ret);
-                
-            }
+            while (resultSet.next()) punches.add(makePunch(resultSet));
+            
             
             /* Second query:
             *  After the given date, if this employees's very next punch
@@ -181,22 +127,7 @@ public class TASDatabase {
             
             resultSet = pstSelect.executeQuery();
         
-            if (resultSet.next()) {
-                
-                HashMap byteResults = new HashMap<String, Byte>();
-                byteResults.put("terminalID", (byte)resultSet.getShort("terminalid"));
-                byteResults.put("punchTypeID", (byte)resultSet.getShort("punchtypeiD"));
-                
-                Punch ret =  new Punch(
-                        resultSet.getInt("id"),
-                        resultSet.getString("badgeid"),
-                        byteResults,
-                        resultSet.getLong("originaltimestamp_unix_mili")
-                );
-                
-                punches.add(ret);
-                
-            }
+            if (resultSet.next()) punches.add(makePunch(resultSet));
             
             return punches;
             
@@ -330,8 +261,83 @@ public class TASDatabase {
             
             else throw new Exception(
                     "Query unsuccessful: either no employee with badge ID `" + badge.getID()
-                    + "` exists, or or the database failed."
+                    + "` exists, or the database has failed."
             );
+            
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+        
+        return null;
+        
+    }
+    
+    /**
+     * Inserts an entry into the `punch` table based off a given `Punch` object
+     * @param p The `Punch` object whose information should be inserted into
+     * the database
+     * @return The ID of the inserted punch record
+     */
+    public int insertPunch(Punch p)
+    {
+        try {
+            
+            query = "INSERT INTO punch (terminalid, badgeid, originaltimestamp, punchtypeid) VALUES(?, ?, FROM_UNIXTIME(?/1000), ?)";
+            pstUpdate = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            pstUpdate.setShort(1, util.UnsignedByteHandler.getAsShort(p.getTerminalID()));
+            pstUpdate.setString(2, p.getBadgeID());
+            pstUpdate.setLong(3, p.getOriginalTimeStamp());
+            pstUpdate.setShort(4, util.UnsignedByteHandler.getAsShort(p.getPunchTypeID()));
+            
+            pstUpdate.execute();
+            
+            resultSet = pstUpdate.getGeneratedKeys();
+            
+            if (resultSet.next()) {
+                
+                int res = resultSet.getInt(1);
+            
+                return res;
+                
+            }
+            
+            else throw new Exception(
+                    "Insertion unsuccessful. Failed to insert Punch: \n"
+                    + p.printOriginalTimestamp() // PLACE HOLDER: should be `p.toString()` once it is implemented
+            );
+                    
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+        
+        return 0;
+        
+    }
+        
+    /**
+     * Generic method designed to create a new Punch object from a "SELECT *,
+     * UNIX_TIMESTAMP(originaltimestamp)*1000 FROM shift"-derived ResultSet
+     * @param result Query result containing punch information
+     * @return New Punch object containing the ResultSet's data, if the
+     * ResultSet contains proper information; null otherwise
+     */
+    private Punch makePunch(ResultSet result) {
+        
+        HashMap byteResults = new HashMap<String, Byte>();
+        
+        try {
+        
+            byteResults.put("terminalID", (byte)result.getShort("terminalid"));
+            byteResults.put("punchTypeID", (byte)result.getShort("punchtypeiD"));
+                
+            Punch ret =  new Punch(
+                result.getInt("id"),
+                result.getString("badgeid"),
+                byteResults,
+                result.getLong("originaltimestamp_unix_mili")
+            );
+            
+            return ret;
             
         } catch (Exception e) {
             System.err.println(e.toString());
@@ -354,6 +360,7 @@ public class TASDatabase {
         HashMap localTimeResults = new HashMap<String, LocalTime>();
         
         try {
+            
             byteResults.put("id", (byte)result.getShort("id"));
             byteResults.put("interval", (byte)result.getShort("interval"));
             byteResults.put("gracePeriod", (byte)result.getShort("graceperiod"));
