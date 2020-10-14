@@ -128,7 +128,7 @@ public class Punch {
     }
     
     private void buildTimeStampString() {
-        
+
         try {
             
             if (originalTimeStamp != null) {

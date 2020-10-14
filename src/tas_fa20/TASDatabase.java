@@ -130,7 +130,7 @@ public class TASDatabase {
             
             LocalDate parsedDate = Instant.ofEpochMilli(ts).atZone(ZoneId.systemDefault()).toLocalDate();
             ArrayList<Punch> punches = new ArrayList<Punch>();
-            
+
 
             /* First query:
             *  Get all punches made by this employee on the given date
@@ -161,7 +161,6 @@ public class TASDatabase {
                 punches.add(ret);
                 
             }
-            
             
             /* Second query:
             *  After the given date, if this employees's very next punch
