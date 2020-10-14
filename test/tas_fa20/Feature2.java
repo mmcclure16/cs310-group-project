@@ -47,7 +47,6 @@ public class Feature2 {
         Punch p2 = db.getPunch(punchid);
 		
         /* Compare Punches */
-
         assertEquals(badgeid, p2.getBadgeid());
 
         rts.setTimeInMillis(p2.getOriginaltimestamp());
