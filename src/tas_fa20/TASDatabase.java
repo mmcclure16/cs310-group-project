@@ -137,7 +137,18 @@ public class TASDatabase {
             resultSet = pstSelect.executeQuery();
         
             while(resultSet.next()){
+                HashMap byteResults = new HashMap<String, Byte>();
                 
+                byteResults.put("terminalID", (byte)resultSet.getShort("terminalid"));
+                byteResults.put("punchTypeID", (byte)resultSet.getShort("punchtypeiD"));
+                
+                Punch ret =  new Punch(
+                        resultSet.getInt("id"),
+                        resultSet.getString("badgeid"),
+                        byteResults,
+                        resultSet.getLong("originaltimestamp_unix_mili")
+                );
+                Punch.add(ret);
             }
         }
         
