@@ -128,11 +128,11 @@ public class TASDatabase {
     public ArrayList<Punch> getDailyPunchList(Badge badge, long ts)
     {
         try {
-            ArrayList<Punch> Punch = new ArrayList<Punch>();
+            ArrayList<Punch> Punch = new ArrayList<>();
             SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy-mm-dd");
             String s_ts = (timeStampFormat.format(new java.util.Date(ts)));
 
-            query = "SELECT * FROM PUNCH WHERE badgeid = ? AND DATE(originaltimestamp) == " + s_ts + ";";
+            query = "SELECT * FROM PUNCH WHERE badgeid = "+badge.getID()+" AND DATE(originaltimestamp) == " + s_ts + ";";
             pstSelect = conn.prepareStatement(query);     
             resultSet = pstSelect.executeQuery();
         
@@ -150,6 +150,10 @@ public class TASDatabase {
                 );
                 Punch.add(ret);
             }
+            
+            query = "SELECT * FROM PUNCH WHERE badgeid = "+badge.getID()+" AND DATE(originaltimestamp) == " + s_ts + ";";
+            
+            return Punch;
         }
         
         catch (Exception e) {
