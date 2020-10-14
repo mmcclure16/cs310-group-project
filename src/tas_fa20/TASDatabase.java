@@ -6,15 +6,26 @@ import java.time.*;
 
 public class TASDatabase {
     
-        Connection conn = null;
-        PreparedStatement pstSelect = null, pstUpdate = null;
-        ResultSet resultSet = null;
-        ResultSetMetaData metaData = null;
+        private Connection conn = null;
+        private PreparedStatement pstSelect = null, pstUpdate = null;
+        private ResultSet resultSet = null;
+        private ResultSetMetaData metaData = null;
 
-        String query;
+        private String query;
 
-        boolean hasresults;
-        int resultCount, columnCount = 0;
+        private boolean hasresults;
+        private int resultCount, columnCount = 0;
+        
+        // SQL query items as commonly selected from `punch`
+        private final String PUNCH_SELECT_ITEMS = "id, terminalid, badgeid,"
+                + " punchtypeid, UNIX_TIMESTAMP(originaltimestamp)*1000 AS"
+                + " originaltimestamp_unix_mili";
+        
+        /* 
+         * An array of `punchtypeid`s (as defined by the database) that
+         * reprsent an "ending punch" (ie, punching out or timing out)
+         */
+        private final int[] TERMINATING_PUNCHTYPE_IDS = {0, 2};
         
     public TASDatabase() {
         
@@ -43,9 +54,7 @@ public class TASDatabase {
         
         try {
             
-            query = "SELECT id, terminalid, badgeid, punchtypeid,"
-                    + " UNIX_TIMESTAMP(originaltimestamp)*1000 AS originaltimestamp_unix_mili"
-                    + " FROM punch WHERE id = ?";
+            query = "SELECT " + PUNCH_SELECT_ITEMS + " FROM punch WHERE id = ?";
             pstSelect = conn.prepareStatement(query);
             pstSelect.setInt(1, punchID);
             
@@ -83,9 +92,7 @@ public class TASDatabase {
             *  Get all punches made by this employee on the given date
             */
             
-            query = "SELECT id, terminalid, badgeid, punchtypeid,"
-                    + " UNIX_TIMESTAMP(originaltimestamp)*1000 AS originaltimestamp_unix_mili"
-                    + " FROM punch WHERE (originaltimestamp BETWEEN '"
+            query = "SELECT " + PUNCH_SELECT_ITEMS + " FROM punch WHERE (originaltimestamp BETWEEN '"
                     + parsedDate + " 00:00:00' AND '" + parsedDate + " 23:59:59') AND badgeid = ?;";
             pstSelect = conn.prepareStatement(query);
             pstSelect.setString(1, badge.getID());
@@ -115,12 +122,11 @@ public class TASDatabase {
             *  should be logged with the given date's punches
             */
             
-            query = "SELECT id, terminalid, badgeid, punchtypeid,"
-                    + " UNIX_TIMESTAMP(originaltimestamp)*1000 AS originaltimestamp_unix_mili"
-                    + " FROM ("
+            query = "SELECT " + PUNCH_SELECT_ITEMS + " FROM ("
                         + "(SELECT * FROM punch WHERE badgeid = ? AND (originaltimestamp > '"
                         + parsedDate + " 23:59:59') ORDER BY originaltimestamp ASC LIMIT 1)"
-                    + ") tmp WHERE punchtypeid = 0 OR punchtypeid = 2";
+                    + ") tmp WHERE "
+                    + query_OrEqualsBuilder("punchtypeid", TERMINATING_PUNCHTYPE_IDS);
 
             pstSelect = conn.prepareStatement(query);
             pstSelect.setString(1, badge.getID());
@@ -383,6 +389,32 @@ public class TASDatabase {
         }
         
         return null;
+        
+    }
+    
+    /**
+     * Given a column name and array of Integer values, generates a series of
+     * "... OR {column} = ..." SQL statements for the column for each value in
+     * the array
+     * @param column Name of column to check for each value
+     * @param items Array of integer values check
+     * @return As a String, a series of "... OR {column} = ..." SQL statements for
+     * each value in the passed array; the first value does not have a leading "OR"
+     */
+    private String query_OrEqualsBuilder(String column, int[] items) {
+        
+        StringBuilder res = new StringBuilder();
+        
+        // prime-START: create first entry without leading "OR"
+        
+        res.append(column + " = " + items[0]);
+        
+        // prime-END
+        
+        for (int i = 1; i < items.length; ++i)
+            res.append(" OR " + column + " = " + items[i]);
+        
+        return res.toString();
         
     }
     
