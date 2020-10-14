@@ -151,7 +151,8 @@ public class TASDatabase {
                 Punch.add(ret);
             }
             
-            query = "SELECT * FROM PUNCH WHERE badgeid = "+badge.getID()+" AND DATE(originaltimestamp) == " + s_ts + ";";
+            query = "SELECT * FROM PUNCH WHERE badgeid = "+badge.getID()+" AND DATE(originaltimestamp) == " + s_ts + " AND punchtypeid = 0 OR "
+                    + "punchtypeid = 2 ORDER BY originaltimestamp LIMIT 1;";
             
             return Punch;
         }
