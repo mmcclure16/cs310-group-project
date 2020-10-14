@@ -3,6 +3,7 @@ package tas_fa20;
 import java.util.*;
 import java.sql.*;
 import java.time.LocalTime;
+import java.text.SimpleDateFormat;
 
 public class TASDatabase {
     
@@ -122,6 +123,29 @@ public class TASDatabase {
         
         return 0;
         
+    }
+    
+    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts)
+    {
+        try {
+            ArrayList<Punch> Punch = new ArrayList<Punch>();
+            SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy-mm-dd");
+            String s_ts = (timeStampFormat.format(new java.util.Date(ts)));
+
+            query = "SELECT * FROM PUNCH WHERE badgeid = ? AND DATE(originaltimestamp) == " + s_ts + ";";
+            pstSelect = conn.prepareStatement(query);     
+            resultSet = pstSelect.executeQuery();
+        
+            while(resultSet.next()){
+                
+            }
+        }
+        
+        catch (Exception e) {
+            System.err.println(e.toString());
+        }
+         
+        return null;
     }
     
     /**
