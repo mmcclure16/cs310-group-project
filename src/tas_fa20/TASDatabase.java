@@ -336,7 +336,7 @@ public class TASDatabase {
             byteResults.put("terminalID", (byte)result.getShort("terminalid"));
             byteResults.put("punchTypeID", (byte)result.getShort("punchtypeiD"));
                 
-            Punch ret =  new Punch(
+            Punch ret = new Punch(
                 result.getInt("id"),
                 result.getString("badgeid"),
                 byteResults,
@@ -376,13 +376,15 @@ public class TASDatabase {
             localTimeResults.put("stop", result.getTime("stop").toLocalTime());
             localTimeResults.put("lunchStart", result.getTime("lunchstart").toLocalTime());
             localTimeResults.put("lunchStop", result.getTime("lunchstop").toLocalTime());
-
-            return new Shift(
+            
+            Shift ret = new Shift(
                 byteResults,
                 localTimeResults,
                 result.getString("description"),
                 result.getShort("lunchdeduct")
             );
+
+            return ret;
             
         } catch (Exception e) {
             System.err.println(e.toString());
