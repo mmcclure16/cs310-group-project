@@ -74,6 +74,9 @@ public class Punch {
         adjustmentType = null;
     }
     
+    public void adjust(Shift s) {
+    }
+    
     public int getID() {
         return id;
     }
