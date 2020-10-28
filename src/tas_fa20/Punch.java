@@ -120,7 +120,7 @@ public class Punch {
         LocalDate punchDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
         LocalTime formattedPunchTime = instant.atZone(ZoneId.systemDefault()).toLocalTime().withNano(0);
         
-        Duration adjustedPunchTime_Offset = Duration.ofHours(formattedPunchTime.getHour());
+        int adjustedPunchTime_dayStartMinuteOffset = 0;
         
         // In seconds: The amount of duration of the grace period
         int gracePeriodSeconds =  util.UnsignedByteHandler.getAsShort(s.getGracePeriod()) / 60;
@@ -145,7 +145,7 @@ public class Punch {
                 if (formattedPunchTime.isAfter( s.getLunchStop().minusSeconds(intervalSeconds + 1) )) {
                     // clock-in time is equal to "getLunchStop()" | adjustmentType -> LUNCH STOP
                     adjustmentType = "Lunch Stop";
-                    adjustedPunchTime_Offset = adjustedPunchTime_Offset.plusMinutes(s.getLunchStop().getMinute());
+                    adjustedPunchTime_dayStartMinuteOffset = s.getLunchStop().getMinute();
                 }
                 
                 // Else, is it before it's possble to be late for the start-shift?
@@ -160,9 +160,7 @@ public class Punch {
                         else {
                             
                             adjustmentType = "Interval Round";
-                            adjustedPunchTime_Offset = adjustedPunchTime_Offset.plusMinutes(
-                                    getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
-                            );
+                            adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes);
                             
                         }
                             //push to nearest-forward interval | adjustmentType -> INTERVAL ROUND }
@@ -171,7 +169,6 @@ public class Punch {
                     
                     // else if(Less than or equal to start interval?) { clock in time is perfect | adjustmentType -> SHIFT START }
                     
-                    // THE FEATURE TEST SCRIPTS DO NOT ACKNOWLEDGE 'GRACE PERIOD' AS DEFINED BY CANVAS
                     // else [(this is implicitly within the grace period)] { push back to shift start | adjustmentType -> SHIFT GRACE }
                 }
                 
@@ -198,7 +195,7 @@ public class Punch {
                 
                 if (formattedPunchTime.isAfter( s.getStart().minusSeconds(intervalSeconds + 1) )) {
                     adjustmentType = "Lunch Start";
-                    adjustedPunchTime_Offset = adjustedPunchTime_Offset.plusMinutes(s.getLunchStart().getMinute());
+                    adjustedPunchTime_dayStartMinuteOffset = s.getLunchStart().getMinute();
                 }
             }
             // ...
@@ -207,7 +204,10 @@ public class Punch {
         // Exception (got this far with a punchTypeID we don't recognize)
         else {}
         
-        adjustedTimeStamp = punchDate.atStartOfDay().plusMinutes(adjustedPunchTime_Offset.toMinutes()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        // Add time to start of day; convert to Unix timestamp
+        adjustedTimeStamp = punchDate.atStartOfDay().plusMinutes(
+                adjustedPunchTime_dayStartMinuteOffset
+        ).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         
     }
     
