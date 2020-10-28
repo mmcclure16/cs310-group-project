@@ -144,6 +144,8 @@ public class Punch {
                 // Is it during lunch?
                 if (formattedPunchTime.isAfter( s.getLunchStop().minusSeconds(intervalSeconds + 1) )) {
                     // clock-in time is equal to "getLunchStop()" | adjustmentType -> LUNCH STOP
+                    adjustmentType = "Lunch Stop";
+                    adjustedPunchTime_Offset = adjustedPunchTime_Offset.plusMinutes(s.getLunchStop().getMinute());
                 }
                 
                 // Else, is it before it's possble to be late for the start-shift?
@@ -152,17 +154,19 @@ public class Punch {
                     // if(before pre-shift start interval)
                     if (formattedPunchTime.isBefore(s.getStart().minusMinutes(intervalMinutes))) {
                         if (isPerfectInterval) { //do not adjust | adjustmentType -> NONE }
+                            adjustmentType = "None";
                         }
                         
                         else {
                             
                             adjustmentType = "Interval Round";
                             adjustedPunchTime_Offset = adjustedPunchTime_Offset.plusMinutes(
-getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
+                                    getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
                             );
                             
                         }
                             //push to nearest-forward interval | adjustmentType -> INTERVAL ROUND }
+                            
                     }
                     
                     // else if(Less than or equal to start interval?) { clock in time is perfect | adjustmentType -> SHIFT START }
@@ -188,7 +192,15 @@ getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
         else if (TERMINATING_PUNCHTYPE_IDS.contains(punchTypeID)) {
             
              /* 3. Determine the precise (clock-out) type  */
-            
+            if(formattedPunchTime.isBefore(s.getLunchStart().plusSeconds(gracePeriodSeconds + 1))){
+                
+                boolean isPerfectInterval = ((formattedPunchTime.getMinute() % intervalMinutes) == 0);
+                
+                if (formattedPunchTime.isAfter( s.getStart().minusSeconds(intervalSeconds + 1) )) {
+                    adjustmentType = "Lunch Start";
+                    adjustedPunchTime_Offset = adjustedPunchTime_Offset.plusMinutes(s.getLunchStart().getMinute());
+                }
+            }
             // ...
         }
         
