@@ -168,20 +168,37 @@ public class Punch {
                     }
                     
                     // else if(Less than or equal to start interval?) { clock in time is perfect | adjustmentType -> SHIFT START }
-                    
+                    else if (formattedPunchTime.getMinute() == (s.getStart().getMinute())){
+                        //(formattedPunchTime.getMinute() == (s.getStart().getMinute()))
+                        //(formattedPunchTime.isBefore (s.getStart()) || (isPerfectInterval))
+                        adjustmentType = "Shift Start";
+                    }
                     // else [(this is implicitly within the grace period)] { push back to shift start | adjustmentType -> SHIFT GRACE }
+                    else {
+                        adjustedPunchTime_dayStartMinuteOffset = s.getStart().getMinute();
+                        adjustmentType = "Shift Grace";
+                    }
                 }
                 
                 // Else, start-shift is late
                 else {
                     // if (`isPerfectInterval`) { do not adjust | adjustmentType -> NONE }
                     // else { push to nearest-forward interval | adjustmentType -> SHIFT DOCKED }
+                    if (isPerfectInterval){
+                            adjustmentType = "None";
+                    }
+                    else {
+                        adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes);
+                        adjustmentType = "Shift Docked";
+                    }
+                    
                 }
                 
             }
             
             // Else, lunch-end is late
             else {
+                
             }
         }
 
