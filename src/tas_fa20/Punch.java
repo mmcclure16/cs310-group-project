@@ -184,11 +184,12 @@ public class Punch {
                 else {
                     // if (`isPerfectInterval`) { do not adjust | adjustmentType -> NONE }
                     // else { push to nearest-forward interval | adjustmentType -> SHIFT DOCKED }
+                    adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes);
+                    
                     if (isPerfectInterval){
-                            adjustmentType = "None";
+                        adjustmentType = "None";
                     }
                     else {
-                        adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes);
                         adjustmentType = "Shift Docked";
                     }
                     
@@ -198,7 +199,8 @@ public class Punch {
             
             // Else, lunch-end is late
             else {
-                
+                adjustmentType = "Lunch Stop";
+                adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes);
             }
         }
 
