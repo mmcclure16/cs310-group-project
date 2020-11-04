@@ -298,13 +298,26 @@ public class Punch {
                                 getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
                             );
                         }
+                             
+                    }
+                    
+                    else if (formattedPunchTime.getMinute() <= (s.getStop().getMinute())) {
+                        adjustmentType = "Shift Stop";
+                        adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
+                            s.getStop().getHour(),
+                            s.getStop().getMinute()
+                        );
+                    }
+                    
+                    else {
+                        adjustmentType = "Shift Grace";
+                        adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
+                            s.getStop().getHour(),
+                            s.getStop().getMinute()
+                        );
                     }
                 }
-                
-                
             }
-            
-            
         }
         
         // Is it a punch we don't recognize?
