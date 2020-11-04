@@ -133,9 +133,9 @@ public class Punch {
             // (Latest possible clock-in) Too late for lunch-stop?
             if ( formattedPunchTime.isAfter(s.getLunchStop().plusSeconds(gracePeriodSeconds)) ) {
                 adjustmentType = "Shift Dock";
-                adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                    formattedPunchTime.getHour(),
-                    getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
+                adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
+                        formattedPunchTime,
+                        intervalMinutes
                 );
             }
             
@@ -165,9 +165,9 @@ public class Punch {
                     
                     else {
                         adjustmentType = "Shift Dock";
-                        adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                            formattedPunchTime.getHour(),
-                            getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
+                        adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
+                                formattedPunchTime,
+                                intervalMinutes
                         );
                     }
                     
@@ -191,9 +191,9 @@ public class Punch {
                         // not a perfect interval, so change it into one
                         else {
                             adjustmentType = "Interval Round";
-                            adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                                formattedPunchTime.getHour(),
-                                getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
+                            adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
+                                    formattedPunchTime,
+                                    intervalMinutes
                             );
                         }
                             
@@ -237,9 +237,9 @@ public class Punch {
             // (Earliest possible clock out) Too early for lunch-start?
             if ( formattedPunchTime.isBefore(s.getLunchStart().minusSeconds(gracePeriodSeconds)) ) {
                 adjustmentType = "Shift Dock";
-                adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                    formattedPunchTime.getHour(),
-                    getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
+                adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
+                        formattedPunchTime,
+                        intervalMinutes
                 );
             }
             
@@ -269,9 +269,9 @@ public class Punch {
 
                     else {
                         adjustmentType = "Shift Dock";
-                        adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                            formattedPunchTime.getHour(),
-                            getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
+                        adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
+                                formattedPunchTime,
+                                intervalMinutes
                         );
                     }
                 }
@@ -293,9 +293,9 @@ public class Punch {
                         // not a perfect interval, so change it into one
                         else {
                             adjustmentType = "Interval Round";
-                            adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                                formattedPunchTime.getHour(),
-                                getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
+                            adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
+                                    formattedPunchTime,
+                                    intervalMinutes
                             );
                         }
                              
@@ -396,8 +396,12 @@ public class Punch {
         
     }
     
-    private int getNearestAdjustmentInterval(int currentMinutes, int intervalMinutes) {
-        return (int)Math.round(1f*currentMinutes/intervalMinutes) * intervalMinutes;
+    private int getNearestAdjustmentInterval(LocalTime currentTime, int intervalMinutes) {
+        
+        return hourMinuteAsMinutes(
+                currentTime.getHour(),
+                (int)Math.round( (currentTime.getMinute() + (currentTime.getSecond()/60f)) / intervalMinutes ) * intervalMinutes
+        );
     }
     
     private int hourMinuteAsMinutes(int hours, int minutes) {
