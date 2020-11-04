@@ -121,11 +121,9 @@ public class Punch {
         
         int adjustedPunchTime_dayStartMinuteOffset = 0;
         
-        // In seconds: Grace period for late-clockin and early-clockout
-        int gracePeriodSeconds =  util.UnsignedByteHandler.getAsShort(s.getGracePeriod()) * 60;
-        
+        int gracePeriodMinutes = util.UnsignedByteHandler.getAsShort(s.getGracePeriod());
         int intervalMinutes = util.UnsignedByteHandler.getAsShort(s.getInterval());
-        int intervalSeconds = intervalMinutes * 60;
+        
         
         // Is it a Weekend?
         if (punchDate.getDayOfWeek() == DayOfWeek.SATURDAY || punchDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
@@ -156,7 +154,7 @@ public class Punch {
             if (punchTypeID == 1) {
 
                 // (Latest possible clock-in) Too late for lunch-stop?
-                if ( formattedPunchTime.isAfter(s.getLunchStop().plusSeconds(gracePeriodSeconds)) ) {
+                if ( formattedPunchTime.isAfter(s.getLunchStop().plusMinutes(gracePeriodMinutes)) ) {
                     adjustmentType = "Shift Dock";
                     adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
                             formattedPunchTime,
@@ -177,7 +175,7 @@ public class Punch {
                     }
 
                     // ...not during lunch - is it a late Shift-Start clockin? (After Shift Start + Grace Period)
-                    else if (formattedPunchTime.isAfter( s.getStart().plusSeconds(gracePeriodSeconds) )) {
+                    else if (formattedPunchTime.isAfter( s.getStart().plusMinutes(gracePeriodMinutes) )) {
 
                         // is perfect interval?
                         if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
@@ -261,7 +259,7 @@ public class Punch {
             else if ( (Arrays.asList(RECOGNIZED_PUNCHTYPE_IDS)).contains(util.UnsignedByteHandler.getAsShort(punchTypeID))) {
 
                 // (Earliest possible clock out) Too early for lunch-start?
-                if ( formattedPunchTime.isBefore(s.getLunchStart().minusSeconds(gracePeriodSeconds)) ) {
+                if ( formattedPunchTime.isBefore(s.getLunchStart().minusMinutes(gracePeriodMinutes)) ) {
                     adjustmentType = "Shift Dock";
                     adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
                             formattedPunchTime,
@@ -282,7 +280,7 @@ public class Punch {
                     }
 
                     // Leave early and before grace period
-                    else if (formattedPunchTime.isBefore(s.getStop().minusSeconds(gracePeriodSeconds))) {
+                    else if (formattedPunchTime.isBefore(s.getStop().minusMinutes(gracePeriodMinutes))) {
 
                         // is perfect interval?
                         if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
