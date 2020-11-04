@@ -23,13 +23,13 @@ public class Punch {
     * A constant list of `punchtypeid`s that are known to/handled by this
     * class
     */
-    private final List<Integer> RECOGNIZED_PUNCHTYPE_IDS = Arrays.asList(0, 1, 2);
+    private final Short[] RECOGNIZED_PUNCHTYPE_IDS = {0, 1, 2};
     
     /* 
     * A  constant list of `punchtypeid`s that represent an "ending punch"
     * (ie, punching out or timing out), as defined by the database
     */
-    private final List<Integer> TERMINATING_PUNCHTYPE_IDS = Arrays.asList(0, 2);
+    private final Short[] TERMINATING_PUNCHTYPE_IDS = {0, 2};
     
     
     /* Constructors for new punch */
@@ -232,23 +232,31 @@ public class Punch {
         }
 
         // Is it an out-Punch?
-        else if (TERMINATING_PUNCHTYPE_IDS.contains(punchTypeID)) {
+        else if ( (Arrays.asList(RECOGNIZED_PUNCHTYPE_IDS)).contains(util.UnsignedByteHandler.getAsShort(punchTypeID))) {
             
-             /* 3. Determine the precise (clock-out) type  */
-            if(formattedPunchTime.isBefore(s.getLunchStart().minusSeconds(gracePeriodSeconds + 1))){
+            // (Earliest possible clock out) Too early for lunch-start?
+            if ( formattedPunchTime.isBefore(s.getLunchStart().minusSeconds(gracePeriodSeconds)) ) {
+                adjustmentType = "Shift Dock";
+                adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
+                    formattedPunchTime.getHour(),
+                    getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
+                );
+            }
+            
+            // ... not early for lunch-start
+            else {
                 
-                boolean isPerfectInterval = ((formattedPunchTime.getMinute() % intervalMinutes) == 0);
-                
-                if (formattedPunchTime.isAfter( s.getStart().minusSeconds(intervalSeconds + 1) )) {
+                // Not too early for lunch-stop - so is it during Lunch?
+                if (formattedPunchTime.isBefore( s.getLunchStop() )) {
                     adjustmentType = "Lunch Start";
-                    
                     adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                        s.getLunchStart().getHour(),
-                        s.getLunchStart().getMinute()
+                            s.getLunchStart().getHour(),
+                            s.getLunchStart().getMinute()
                     );
                 }
+                
             }
-            // ...
+            
         }
         
         // Is it a punch we don't recognize?
@@ -345,9 +353,9 @@ public class Punch {
         
         try {
             
-            if (!RECOGNIZED_PUNCHTYPE_IDS.contains((int)this.punchTypeID))
+            if (!(Arrays.asList(RECOGNIZED_PUNCHTYPE_IDS)).contains(util.UnsignedByteHandler.getAsShort(this.punchTypeID)))
                 throw new Exception("Invalid or unknown `punchTypeID` specn mified:"
-                        + " Integer '" + this.punchTypeID + "' is not recognized"
+                        + " Value '" + this.punchTypeID + "' is not recognized"
                         + " as a `punchTypeID` by the program.\n"
                         + "Attatched Shift ID: " + this.id
                 );
