@@ -255,7 +255,55 @@ public class Punch {
                     );
                 }
                 
+                // Leave early and before grace period
+                else if (formattedPunchTime.isBefore(s.getStop().minusSeconds(gracePeriodSeconds))) {
+                    
+                    // is perfect interval?
+                    if (0 == (formattedPunchTime.getMinute() % intervalMinutes)) {
+                        adjustmentType = "None";
+                        adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
+                            formattedPunchTime.getHour(),
+                            formattedPunchTime.getMinute()
+                        );
+                    }
+
+                    else {
+                        adjustmentType = "Shift Dock";
+                        adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
+                            formattedPunchTime.getHour(),
+                            getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
+                        );
+                    }
+                }
+                
+                //Clocking out late
+                else {
+                    
+                    if (formattedPunchTime.isAfter(s.getStop().plusMinutes(intervalMinutes))){
+                        
+                        // is perfect interval?
+                        if (0 == (formattedPunchTime.getMinute() % intervalMinutes)) {
+                            adjustmentType = "None";
+                            adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
+                                    formattedPunchTime.getHour(),
+                                    formattedPunchTime.getMinute()
+                            );
+                        }
+                        
+                        // not a perfect interval, so change it into one
+                        else {
+                            adjustmentType = "Interval Round";
+                            adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
+                                formattedPunchTime.getHour(),
+                                getNearestAdjustmentInterval(formattedPunchTime.getMinute(), intervalMinutes)
+                            );
+                        }
+                    }
+                }
+                
+                
             }
+            
             
         }
         
