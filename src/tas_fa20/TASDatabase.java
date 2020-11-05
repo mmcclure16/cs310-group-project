@@ -21,12 +21,6 @@ public class TASDatabase {
                 + " punchtypeid, UNIX_TIMESTAMP(originaltimestamp)*1000 AS"
                 + " originaltimestamp_unix_mili";
         
-        /* 
-         * An array of `punchtypeid`s (as defined by the database) that
-         * reprsent an "ending punch" (ie, punching out or timing out)
-         */
-        private final int[] TERMINATING_PUNCHTYPE_IDS = {0, 2};
-        
     public TASDatabase() {
         
         try {
@@ -126,7 +120,7 @@ public class TASDatabase {
                         + "(SELECT * FROM punch WHERE badgeid = ? AND (originaltimestamp > '"
                         + parsedDate + " 23:59:59') ORDER BY originaltimestamp ASC LIMIT 1)"
                     + ") tmp WHERE "
-                    + query_OrEqualsBuilder("punchtypeid", TERMINATING_PUNCHTYPE_IDS);
+                    + query_OrEqualsBuilder("punchtypeid", Punch.TERMINATING_PUNCHTYPE_IDS);
 
             pstSelect = conn.prepareStatement(query);
             pstSelect.setString(1, badge.getID());

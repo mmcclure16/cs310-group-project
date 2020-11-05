@@ -21,13 +21,13 @@ public class Punch {
     private Long adjustedTimeStamp;
     
     
-    private final Short[] RECOGNIZED_PUNCHTYPE_IDS = {0, 1, 2};
+    private final int[] RECOGNIZED_PUNCHTYPE_IDS = {0, 1, 2};
     
     /* 
     * A  constant list of `punchtypeid`s that represent an "ending punch"
     * (ie, punching out or timing out), as defined by the database
     */
-    public final Short[] TERMINATING_PUNCHTYPE_IDS = {0, 2};
+    public static final int[] TERMINATING_PUNCHTYPE_IDS = {0, 2};
     
     
     /* Constructors for new punch */
