@@ -2,8 +2,9 @@ package tas_fa20;
 
 import java.util.*;
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.text.SimpleDateFormat;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class Punch {
     
@@ -19,17 +20,14 @@ public class Punch {
     private String adjustmentType;
     private Long adjustedTimeStamp;
     
-    /* 
-    * A constant list of `punchtypeid`s that are known to/handled by this
-    * class
-    */
+    
     private final Short[] RECOGNIZED_PUNCHTYPE_IDS = {0, 1, 2};
     
     /* 
     * A  constant list of `punchtypeid`s that represent an "ending punch"
     * (ie, punching out or timing out), as defined by the database
     */
-    private final Short[] TERMINATING_PUNCHTYPE_IDS = {0, 2};
+    public final Short[] TERMINATING_PUNCHTYPE_IDS = {0, 2};
     
     
     /* Constructors for new punch */
@@ -113,13 +111,14 @@ public class Punch {
     /* Get/set methods */
     
     public void adjust(Shift s) {
+        
+        // reset on each attempt
+        adjustedTimeStamp = null;
          
         Instant OTS_Instant = Instant.ofEpochMilli(originalTimeStamp);
         
         LocalDate punchDate = OTS_Instant.atZone(ZoneId.systemDefault()).toLocalDate();
         LocalTime formattedPunchTime = OTS_Instant.atZone(ZoneId.systemDefault()).toLocalTime().withNano(0);
-        
-        int adjustedPunchTime_dayStartMinuteOffset = 0;
         
         int gracePeriodMinutes = util.UnsignedByteHandler.getAsShort(s.getGracePeriod());
         int intervalMinutes = util.UnsignedByteHandler.getAsShort(s.getInterval());
@@ -131,186 +130,100 @@ public class Punch {
             // is perfect interval?
             if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
                 adjustmentType = "None";
-                adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                    formattedPunchTime.getHour(),
-                    formattedPunchTime.getMinute()
-                );
             }
                     
-            else {
-                adjustmentType = "Interval Round";
-                adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
-                    formattedPunchTime,
-                    intervalMinutes
-                );
-            }
+            else adjustmentType = "Interval Round";
                     
         }
         
-        // Is it a weekday?
+        // no compatible ruleset exists for this (Canvas-defined) label
+        else if (false) adjustmentType = "Shift Grace";
+        
+        // It must be a weekday
         else {
-
-           // Is it an in-punch?
-            if (punchTypeID == 1) {
-
-                // (Latest possible clock-in) Too late for lunch-stop?
-                if ( formattedPunchTime.isAfter(s.getLunchStop().plusMinutes(gracePeriodMinutes)) ) {
-                    adjustmentType = "Shift Dock";
-                    adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
-                            formattedPunchTime,
-                            intervalMinutes
-                    );
-                }
-
-                // ...not late for lunch-stop...
-                
-                // ...so is it during lunch?
-                else if (formattedPunchTime.isAfter( s.getLunchStart() )) {
-                    adjustmentType = "Lunch Stop";
-                    adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                        s.getLunchStop().getHour(),
-                        s.getLunchStop().getMinute()
-                    );
-                }
+            
+            /* Note: "Shift Grace" is roped in with "Shift Start"/"Shift Stop"
+             * within the tests, so its implementation as defined in the
+             * "Feature 3" module is absent (in other words, grace period is
+             * counted, but it does not have a unique label as listed on the module)
+            */
+           
+            switch (punchTypeID) {
+           
+                case 1: { // in-punch
                     
-                // ...not during lunch - is it perfect?
-                else if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
-                    adjustmentType = "None";
-                    adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                        formattedPunchTime.getHour(),
-                        formattedPunchTime.getMinute()
-                    );
-                }
-
-                // ...not during lunch - is it a late Shift-Start clockin? (After Shift Start + Grace Period)
-                else if (formattedPunchTime.isAfter( s.getStart().plusMinutes(gracePeriodMinutes) )) {
-                    adjustmentType = "Shift Dock";
-                    adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
-                        formattedPunchTime,
-                        intervalMinutes
-                    );
-                }
-
-                // ...not during lunch, not late Shift Start - must be on time or before Shift Start...
-                
-                // is before Shift-Start's interval?
-                else if (formattedPunchTime.isBefore(s.getStart().minusMinutes(intervalMinutes))) {
-                    adjustmentType = "Interval Round";
-                    adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
-                        formattedPunchTime,
-                        intervalMinutes
-                    );
-                }
-
-                // ... not before Shift-Start's interval - is it within Shift Start's interval?
-                else if (formattedPunchTime.getMinute() >= (s.getStart().getMinute())) {
-                    adjustmentType = "Shift Start";
-                    adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                        s.getStart().getHour(),
-                        s.getStart().getMinute()
-                    );
-                }
-
-                /*
-                * Path-recap:
-                *
-                * 1. Not after shift-start + grace period passes
-                * 2. Not before Shift-Start's interval
-                * 3. Not within Shift-Start's interval
-                *
-                * Therefore, it's within the grace period
-                */
-                else {
-                    adjustmentType = "Shift Grace";
-                    adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                        s.getStart().getHour(),
-                        s.getStart().getMinute()
-                    );
-                }
-
-            }
-
-            // Is it an out-punch?
-            else if ( (Arrays.asList(RECOGNIZED_PUNCHTYPE_IDS)).contains(util.UnsignedByteHandler.getAsShort(punchTypeID))) {
-
-                // (Earliest possible clock out) Too early for lunch-start?
-                if ( formattedPunchTime.isBefore(s.getLunchStart().minusMinutes(gracePeriodMinutes)) ) {
-                    adjustmentType = "Shift Dock";
-                    adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
-                            formattedPunchTime,
-                            intervalMinutes
-                    );
-                }
-
-                // ...not early for lunch-start...
-                
-                //...so is it during Lunch?
-                else if (formattedPunchTime.isBefore( s.getLunchStop() )) {
-                    adjustmentType = "Lunch Start";
-                    adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                        s.getLunchStart().getHour(),
-                        s.getLunchStart().getMinute()
-                    );
-                }
+                    // clock in sometime after lunch started?
+                    if (formattedPunchTime.isAfter( s.getLunchStart() )) {
+                        adjustmentType = "Lunch Stop";
+                    }
                     
-                // ...not during lunch - is it perfect?
-                else if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
-                    adjustmentType = "None";
-                    adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                        formattedPunchTime.getHour(),
-                        formattedPunchTime.getMinute()
-                    );
+                    // clock in during Shift Start interval-radius?
+                    else if (intervalMinutes*60 >= Math.abs(SECONDS.between(formattedPunchTime, s.getStart()))) {
+
+                        // clock in within grace period?
+                        if (formattedPunchTime.compareTo(s.getStart().plusMinutes(gracePeriodMinutes)) <= 0) {
+                            adjustmentType = "Shift Start";
+                            adjustedTimeStamp = dateAndTimeToUnixTimestamp(punchDate, s.getStart());
+                        }
+
+                        else adjustmentType = "Shift Dock";
+                        
+                    }
+
+                    else if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
+                        adjustmentType = "None";
+                    }
+                    
+                    else adjustmentType = "Interval Round";
+                    
+                    break;
                 }
 
-                // ...not during lunch - is it an early Shift-Stop clockout? (Before Shift Stop (minus) Grace Period)
-                else if (formattedPunchTime.isBefore(s.getStop().minusMinutes(gracePeriodMinutes))) {
-                    adjustmentType = "Shift Dock";
-                    adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
-                        formattedPunchTime,
-                        intervalMinutes
-                    );
-                }
-                
-                // ...not during lunch, not early Shift Stop - must be on time or after Shift Stop....
+                case 0: { // out-punch
+                    
+                    // clock out sometime before lunch has ended?
+                    if (formattedPunchTime.isBefore( s.getLunchStop() )) {
+                        adjustmentType = "Lunch Start";
+                    }
+                    
+                    // clock in during Shift Stop interval-radius?
+                    else if (intervalMinutes*60 >= Math.abs(SECONDS.between(formattedPunchTime, s.getStop()))) {
+                        
+                        // clock out within grace period?
+                        if (formattedPunchTime.compareTo(s.getStop().minusMinutes(gracePeriodMinutes)) >= 0) {
+                            adjustmentType = "Shift Stop";
+                            adjustedTimeStamp = dateAndTimeToUnixTimestamp(punchDate, s.getStop());
+                        }
+                        
+                        else adjustmentType = "Shift Dock";
+                        
+                    }
 
-                // is it after Shift-Stop interval?
-                else if (formattedPunchTime.isAfter(s.getStop().plusMinutes(intervalMinutes))){
-                            
-                    adjustmentType = "Interval Round";
-                    adjustedPunchTime_dayStartMinuteOffset = getNearestAdjustmentInterval(
-                        formattedPunchTime,
-                        intervalMinutes
-                    );
+                    else if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
+                        adjustmentType = "None";
+                    }
 
+                    else adjustmentType = "Interval Round";
+                    
+                    break;
                 }
-                
-                // ... not after Shift-Stop's interval - is it within Shift Stop's interval?
-                else if (formattedPunchTime.getMinute() >= (s.getStop().getMinute())) {
-                    adjustmentType = "Shift Stop";
-                    adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                        s.getStop().getHour(),
-                        s.getStop().getMinute()
-                    );
-                }
-
-                else {
-                    adjustmentType = "Shift Grace";
-                    adjustedPunchTime_dayStartMinuteOffset = hourMinuteAsMinutes(
-                        s.getStop().getHour(),
-                        s.getStop().getMinute()
-                    );
-                 }
+            
+                default: // unhandled punchTypeID
+                    verifyPunchTypeID();
+                    return;
             }
-
-            // Is it a punch-type we don't recognize?
-            else return;
         
         }
         
-        // Add time to start of day; convert to Unix timestamp
-        adjustedTimeStamp = punchDate.atStartOfDay().plusMinutes(
-                adjustedPunchTime_dayStartMinuteOffset
-        ).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        if (adjustedTimeStamp == null) {
+            adjustedTimeStamp = dateAndMinutesToUnixTimestamp(
+                    punchDate,
+                    getNearestAdjustmentInterval(
+                        formattedPunchTime,
+                        intervalMinutes
+                    )
+            );
+        }
         
     }
     
@@ -378,6 +291,14 @@ public class Punch {
         
     }
     
+    private Long dateAndTimeToUnixTimestamp(LocalDate date, LocalTime time) {
+        return date.atTime(time).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+    
+    private Long dateAndMinutesToUnixTimestamp(LocalDate date, int minutes) {
+        return dateAndTimeToUnixTimestamp(date, LocalTime.of(0,0).plusMinutes(minutes));
+    }
+    
     private int getNearestAdjustmentInterval(LocalTime currentTime, int intervalMinutes) {
         
         return hourMinuteAsMinutes(
@@ -405,7 +326,7 @@ public class Punch {
         try {
             
             if (!(Arrays.asList(RECOGNIZED_PUNCHTYPE_IDS)).contains(util.UnsignedByteHandler.getAsShort(this.punchTypeID)))
-                throw new Exception("Invalid or unknown `punchTypeID` specn mified:"
+                throw new Exception("Invalid or unknown `punchTypeID` specified:"
                         + " Value '" + this.punchTypeID + "' is not recognized"
                         + " as a `punchTypeID` by the program.\n"
                         + "Attatched Shift ID: " + this.id
