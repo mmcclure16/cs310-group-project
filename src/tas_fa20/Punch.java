@@ -62,7 +62,7 @@ public class Punch {
     }
     
     
-    /* Master Constructor/Supprot methods */
+    /* Master Constructor/Support methods */
     
     private Punch(int id, byte terminalID, String badgeID, Long originalTimeStamp, byte punchTypeID) {
         this.id = id;
