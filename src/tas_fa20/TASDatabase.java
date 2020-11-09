@@ -119,8 +119,7 @@ public class TASDatabase {
             query = "SELECT " + PUNCH_SELECT_ITEMS + " FROM ("
                         + "(SELECT * FROM punch WHERE badgeid = ? AND (originaltimestamp > '"
                         + parsedDate + " 23:59:59') ORDER BY originaltimestamp ASC LIMIT 1)"
-                    + ") tmp WHERE "
-                    + query_OrEqualsBuilder("punchtypeid", Punch.TERMINATING_PUNCHTYPE_IDS);
+                    + ") tmp WHERE punchtypeid = 0";
 
             pstSelect = conn.prepareStatement(query);
             pstSelect.setString(1, badge.getID());
