@@ -19,36 +19,27 @@ public class Punch {
     
     private String adjustmentType;
     private Long adjustedTimeStamp;
-    
+    LunchStatus adjustedLunchStatus;
     
     public abstract class adjustmentTitles {
-        public static final String start = "Shift Start";
-        public static final String stop = "Shift Stop";
-        public static final String lunchStart = "Lunch Start";
-        public static final String lunchStop = "Lunch Stop";
-        public static final String dock = "Shift Dock";
-        public static final String grace = "Shift Grace";
-        public static final String round = "Interval Round";
-        public static final String none = "None";
+        public static final String START = "Shift Start";
+        public static final String STOP = "Shift Stop";
+        public static final String LUNCH_START = "Lunch Start";
+        public static final String LUNCH_STOP = "Lunch Stop";
+        public static final String DOCK = "Shift Dock";
+        public static final String GRACE = "Shift Grace";
+        public static final String ROUND = "Interval Round";
+        public static final String NONE = "None";
     }
-    
-    
-    private static final Map<String, String> ADJUSTMENT_TITLES = initAdjustmentTitles();
-    private static Map<String, String> initAdjustmentTitles() {
-        HashMap<String, String> mp = new HashMap<>();
-        mp.put("start", "Shift Start");
-        mp.put("stop", "Shift Stop");
-        mp.put("lunch_start", "Lunch Start");
-        mp.put("lunch_stop", "Lunch Stop");
-        mp.put("dock", "Shift Dock");
-        mp.put("grace", "Shift Grace");
-        mp.put("round", "Interval Round");
-        mp.put("none", "None");
-        return Collections.unmodifiableMap(mp);
-    }
-    
     
     private static final int[] RECOGNIZED_PUNCHTYPE_IDS = {0, 1, 2};
+    
+    enum LunchStatus {
+        OCCURRING,
+        OCCURRED,
+        NOT_OCCURRING,
+        INAPPLICABLE
+    };
     
     
     /* Constructors for new punch */
@@ -144,20 +135,25 @@ public class Punch {
         int gracePeriodMinutes = util.UnsignedByteHandler.getAsShort(s.getGracePeriod());
         int intervalMinutes = util.UnsignedByteHandler.getAsShort(s.getInterval());
         
+        // to be overridden if lunch occurs or if lunch doesn't exist
+        adjustedLunchStatus = LunchStatus.NOT_OCCURRING;
         
         // Is it a Weekend?
         if (punchDate.getDayOfWeek() == DayOfWeek.SATURDAY || punchDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
             
+            // inapplicable - weekends have no lunch schedule
+            adjustedLunchStatus = LunchStatus.INAPPLICABLE;
+            
             if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
-                adjustmentType = adjustmentTitles.none;
+                adjustmentType = adjustmentTitles.NONE;
             }
                     
-            else adjustmentType = adjustmentTitles.round;
+            else adjustmentType = adjustmentTitles.ROUND;
                     
         }
         
         // no compatible ruleset exists for this (Canvas-defined) label
-        else if (false) adjustmentType = adjustmentTitles.grace;
+        else if (false) adjustmentType = adjustmentTitles.GRACE;
         
         // It must be a weekday
         else {
@@ -167,26 +163,27 @@ public class Punch {
                 case 1: { // in-punch
                     
                     if (formattedPunchTime.isAfter( s.getLunchStart() )) {
-                        adjustmentType = adjustmentTitles.lunchStop;
+                        adjustmentType = adjustmentTitles.LUNCH_STOP;
+                        adjustedLunchStatus = LunchStatus.OCCURRED;
                     }
                     
                     // Within start interval-radius?
                     else if (intervalMinutes*60 >= Math.abs(SECONDS.between(formattedPunchTime, s.getStart()))) {
 
                         if (formattedPunchTime.compareTo(s.getStart().plusMinutes(gracePeriodMinutes)) <= 0) {
-                            adjustmentType = adjustmentTitles.start;
+                            adjustmentType = adjustmentTitles.START;
                             adjustedTimeStamp = dateAndTimeToUnixTimestamp(punchDate, s.getStart());
                         }
 
-                        else adjustmentType = adjustmentTitles.dock;
+                        else adjustmentType = adjustmentTitles.DOCK;
                         
                     }
 
                     else if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
-                        adjustmentType = adjustmentTitles.none;
+                        adjustmentType = adjustmentTitles.NONE;
                     }
                     
-                    else adjustmentType = adjustmentTitles.round;
+                    else adjustmentType = adjustmentTitles.ROUND;
                     
                     break;
                     
@@ -195,26 +192,27 @@ public class Punch {
                 case 0: { // out-punch
                     
                     if (formattedPunchTime.isBefore( s.getLunchStop() )) {
-                        adjustmentType = adjustmentTitles.lunchStart;
+                        adjustmentType = adjustmentTitles.LUNCH_START;
+                        adjustedLunchStatus = LunchStatus.OCCURRING;
                     }
                     
                     // Within stop interval-radius?
                     else if (intervalMinutes*60 >= Math.abs(SECONDS.between(formattedPunchTime, s.getStop()))) {
                         
                         if (formattedPunchTime.compareTo(s.getStop().minusMinutes(gracePeriodMinutes)) >= 0) {
-                            adjustmentType = adjustmentTitles.stop;
+                            adjustmentType = adjustmentTitles.STOP;
                             adjustedTimeStamp = dateAndTimeToUnixTimestamp(punchDate, s.getStop());
                         }
                         
-                        else adjustmentType = adjustmentTitles.dock;
+                        else adjustmentType = adjustmentTitles.DOCK;
                         
                     }
 
                     else if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
-                        adjustmentType = adjustmentTitles.none;
+                        adjustmentType = adjustmentTitles.NONE;
                     }
 
-                    else adjustmentType = adjustmentTitles.round;
+                    else adjustmentType = adjustmentTitles.ROUND;
                     
                     break;
                     
@@ -275,24 +273,17 @@ public class Punch {
         
     }
     
-    public boolean isLunchPunch() {
+    /**
+     * Determines if whether the post-adjustment timestamp occurs outside of a
+     * shift's scheduled lunch start-end duration or not
+     * @return TRUE if it's outside of post-adjustment shift's scheduled lunch;
+     * FALSE otherwise
+     */
+    public boolean isAdjustedPunchOutsideShiftLunch() {
         
-        if (verify_AdjustedTimeIsSet()) {
-            
-            switch (adjustmentType) {
-                
-                case adjustmentTitles.lunchStart:
-                case adjustmentTitles.lunchStop:
-                    return true;
-                    
-                default:
-                    return false;
-                    
-            }
-            
-        }
+        verify_AdjustedTimeIsSet();
+        return (adjustedLunchStatus == LunchStatus.NOT_OCCURRING);
         
-        return false;
     }
     
     
