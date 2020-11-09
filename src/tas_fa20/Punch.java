@@ -21,7 +21,34 @@ public class Punch {
     private Long adjustedTimeStamp;
     
     
-    private final int[] RECOGNIZED_PUNCHTYPE_IDS = {0, 1, 2};
+    public abstract class adjustmentTitles {
+        public static final String start = "Shift Start";
+        public static final String stop = "Shift Stop";
+        public static final String lunchStart = "Lunch Start";
+        public static final String lunchStop = "Lunch Stop";
+        public static final String dock = "Shift Dock";
+        public static final String grace = "Shift Grace";
+        public static final String round = "Interval Round";
+        public static final String none = "None";
+    }
+    
+    
+    private static final Map<String, String> ADJUSTMENT_TITLES = initAdjustmentTitles();
+    private static Map<String, String> initAdjustmentTitles() {
+        HashMap<String, String> mp = new HashMap<>();
+        mp.put("start", "Shift Start");
+        mp.put("stop", "Shift Stop");
+        mp.put("lunch_start", "Lunch Start");
+        mp.put("lunch_stop", "Lunch Stop");
+        mp.put("dock", "Shift Dock");
+        mp.put("grace", "Shift Grace");
+        mp.put("round", "Interval Round");
+        mp.put("none", "None");
+        return Collections.unmodifiableMap(mp);
+    }
+    
+    
+    private static final int[] RECOGNIZED_PUNCHTYPE_IDS = {0, 1, 2};
     
     
     /* Constructors for new punch */
@@ -122,15 +149,15 @@ public class Punch {
         if (punchDate.getDayOfWeek() == DayOfWeek.SATURDAY || punchDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
             
             if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
-                adjustmentType = "None";
+                adjustmentType = adjustmentTitles.none;
             }
                     
-            else adjustmentType = "Interval Round";
+            else adjustmentType = adjustmentTitles.round;
                     
         }
         
         // no compatible ruleset exists for this (Canvas-defined) label
-        else if (false) adjustmentType = "Shift Grace";
+        else if (false) adjustmentType = adjustmentTitles.grace;
         
         // It must be a weekday
         else {
@@ -140,26 +167,26 @@ public class Punch {
                 case 1: { // in-punch
                     
                     if (formattedPunchTime.isAfter( s.getLunchStart() )) {
-                        adjustmentType = "Lunch Stop";
+                        adjustmentType = adjustmentTitles.lunchStop;
                     }
                     
                     // Within start interval-radius?
                     else if (intervalMinutes*60 >= Math.abs(SECONDS.between(formattedPunchTime, s.getStart()))) {
 
                         if (formattedPunchTime.compareTo(s.getStart().plusMinutes(gracePeriodMinutes)) <= 0) {
-                            adjustmentType = "Shift Start";
+                            adjustmentType = adjustmentTitles.start;
                             adjustedTimeStamp = dateAndTimeToUnixTimestamp(punchDate, s.getStart());
                         }
 
-                        else adjustmentType = "Shift Dock";
+                        else adjustmentType = adjustmentTitles.dock;
                         
                     }
 
                     else if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
-                        adjustmentType = "None";
+                        adjustmentType = adjustmentTitles.none;
                     }
                     
-                    else adjustmentType = "Interval Round";
+                    else adjustmentType = adjustmentTitles.round;
                     
                     break;
                     
@@ -168,26 +195,26 @@ public class Punch {
                 case 0: { // out-punch
                     
                     if (formattedPunchTime.isBefore( s.getLunchStop() )) {
-                        adjustmentType = "Lunch Start";
+                        adjustmentType = adjustmentTitles.lunchStart;
                     }
                     
                     // Within stop interval-radius?
                     else if (intervalMinutes*60 >= Math.abs(SECONDS.between(formattedPunchTime, s.getStop()))) {
                         
                         if (formattedPunchTime.compareTo(s.getStop().minusMinutes(gracePeriodMinutes)) >= 0) {
-                            adjustmentType = "Shift Stop";
+                            adjustmentType = adjustmentTitles.stop;
                             adjustedTimeStamp = dateAndTimeToUnixTimestamp(punchDate, s.getStop());
                         }
                         
-                        else adjustmentType = "Shift Dock";
+                        else adjustmentType = adjustmentTitles.dock;
                         
                     }
 
                     else if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
-                        adjustmentType = "None";
+                        adjustmentType = adjustmentTitles.none;
                     }
 
-                    else adjustmentType = "Interval Round";
+                    else adjustmentType = adjustmentTitles.round;
                     
                     break;
                     
@@ -246,6 +273,26 @@ public class Punch {
         
         else return null;
         
+    }
+    
+    public boolean isLunchPunch() {
+        
+        if (verify_AdjustedTimeIsSet()) {
+            
+            switch (adjustmentType) {
+                
+                case adjustmentTitles.lunchStart:
+                case adjustmentTitles.lunchStop:
+                    return true;
+                    
+                default:
+                    return false;
+                    
+            }
+            
+        }
+        
+        return false;
     }
     
     
@@ -352,7 +399,7 @@ public class Punch {
             if (!res) {
                 throw new Exception("Cannot provide data related to 'adjusted timestamp'"
                     + " until it has been generated by a successful call to"
-                    + " `adjust(Shift)`");
+                    + " `adjust(Shift)`. Data passed may be incorrect.");
             }
             
         } catch(Exception e) {
