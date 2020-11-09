@@ -76,6 +76,7 @@ public class TASDatabase {
     }
     
     public ArrayList<Punch> getDailyPunchList(Badge badge, long ts) {
+        
         try {
             
             LocalDate parsedDate = Instant.ofEpochMilli(ts).atZone(ZoneId.systemDefault()).toLocalDate();
