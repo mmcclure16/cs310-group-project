@@ -23,12 +23,6 @@ public class Punch {
     
     private final int[] RECOGNIZED_PUNCHTYPE_IDS = {0, 1, 2};
     
-    /* 
-    * A  constant list of `punchtypeid`s that represent an "ending punch"
-    * (ie, punching out or timing out), as defined by the database
-    */
-    public static final int[] TERMINATING_PUNCHTYPE_IDS = {0, 2};
-    
     
     /* Constructors for new punch */
     
@@ -127,7 +121,6 @@ public class Punch {
         // Is it a Weekend?
         if (punchDate.getDayOfWeek() == DayOfWeek.SATURDAY || punchDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
             
-            // is perfect interval?
             if (isPerfectInterval(formattedPunchTime.getMinute(), intervalMinutes)) {
                 adjustmentType = "None";
             }
@@ -141,26 +134,18 @@ public class Punch {
         
         // It must be a weekday
         else {
-            
-            /* Note: "Shift Grace" is roped in with "Shift Start"/"Shift Stop"
-             * within the tests, so its implementation as defined in the
-             * "Feature 3" module is absent (in other words, grace period is
-             * counted, but it does not have a unique label as listed on the module)
-            */
            
             switch (punchTypeID) {
            
                 case 1: { // in-punch
                     
-                    // clock in sometime after lunch started?
                     if (formattedPunchTime.isAfter( s.getLunchStart() )) {
                         adjustmentType = "Lunch Stop";
                     }
                     
-                    // clock in during Shift Start interval-radius?
+                    // Within start interval-radius?
                     else if (intervalMinutes*60 >= Math.abs(SECONDS.between(formattedPunchTime, s.getStart()))) {
 
-                        // clock in within grace period?
                         if (formattedPunchTime.compareTo(s.getStart().plusMinutes(gracePeriodMinutes)) <= 0) {
                             adjustmentType = "Shift Start";
                             adjustedTimeStamp = dateAndTimeToUnixTimestamp(punchDate, s.getStart());
@@ -177,19 +162,18 @@ public class Punch {
                     else adjustmentType = "Interval Round";
                     
                     break;
+                    
                 }
 
                 case 0: { // out-punch
                     
-                    // clock out sometime before lunch has ended?
                     if (formattedPunchTime.isBefore( s.getLunchStop() )) {
                         adjustmentType = "Lunch Start";
                     }
                     
-                    // clock in during Shift Stop interval-radius?
+                    // Within stop interval-radius?
                     else if (intervalMinutes*60 >= Math.abs(SECONDS.between(formattedPunchTime, s.getStop()))) {
                         
-                        // clock out within grace period?
                         if (formattedPunchTime.compareTo(s.getStop().minusMinutes(gracePeriodMinutes)) >= 0) {
                             adjustmentType = "Shift Stop";
                             adjustedTimeStamp = dateAndTimeToUnixTimestamp(punchDate, s.getStop());
@@ -206,6 +190,7 @@ public class Punch {
                     else adjustmentType = "Interval Round";
                     
                     break;
+                    
                 }
             
                 default: // unhandled punchTypeID
@@ -259,7 +244,8 @@ public class Punch {
         
     }
     
-    /* Timestamp printing */
+    
+    /* Formatted-Timestamp printing */
     
     private String makeTimeStampString(Long timeStamp) {
         return (timeStampFormat.format(new Date(timeStamp))).toUpperCase();
@@ -290,6 +276,9 @@ public class Punch {
         else return null;
     }
     
+    
+    /* Time Conversions/Calculations */
+    
     private Long dateAndTimeToUnixTimestamp(LocalDate date, LocalTime time) {
         return date.atTime(time).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
@@ -313,6 +302,7 @@ public class Punch {
     private boolean isPerfectInterval(int minute, int intervalMinutes) {
         return 0 == (minute % intervalMinutes);
     }
+    
     
     /* Error handling/building */
     
