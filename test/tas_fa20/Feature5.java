@@ -47,8 +47,6 @@ public class Feature5 {
         ArrayList<HashMap<String, String>> actual = (ArrayList)JSONValue.parse(actualJSON);
 		
         /* Compare to Expected JSON */
-        System.out.println(actual);
-        System.out.println(expected);
         assertEquals(expected, actual);
         
     }
