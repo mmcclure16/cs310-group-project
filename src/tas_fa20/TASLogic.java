@@ -3,6 +3,9 @@ package tas_fa20;
 import java.util.*;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
+import java.util.ArrayList;
+import java.util.HashMap;
+import org.json.simple.*;
 
 
 public class TASLogic {
@@ -29,4 +32,8 @@ public class TASLogic {
         
     }
             
+    public static String getPunchListAsJSON(ArrayList<Punch> dailypunchlist){
+        
+        return null;
+    }
 }
