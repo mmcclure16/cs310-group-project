@@ -32,7 +32,8 @@ public class Punch {
         public static final String NONE = "None";
     }
     
-    private static final int[] RECOGNIZED_PUNCHTYPE_IDS = {0, 1, 2};
+    // index 0: lower bounds -- index 1: upper bounds
+    private static final int[] RECOGNIZED_PUNCHTYPE_ID_RANGE = {0, 2};
     
     enum LunchStatus {
         OCCURRING,
@@ -357,12 +358,16 @@ public class Punch {
         
         try {
             
-            if (!(Arrays.asList(RECOGNIZED_PUNCHTYPE_IDS)).contains(util.UnsignedByteHandler.getAsShort(this.punchTypeID)))
+            if (
+                    !(util.UnsignedByteHandler.getAsShort(punchTypeID) >= RECOGNIZED_PUNCHTYPE_ID_RANGE[0]
+                    && util.UnsignedByteHandler.getAsShort(punchTypeID) <= RECOGNIZED_PUNCHTYPE_ID_RANGE[1])
+                ) {
                 throw new Exception("Invalid or unknown `punchTypeID` specified:"
-                        + " Value '" + this.punchTypeID + "' is not recognized"
+                        + " Value '" + punchTypeID + "' is not recognized"
                         + " as a `punchTypeID` by the program.\n"
-                        + "Attatched Shift ID: " + this.id
+                        + "Attatched Punch ID: " + this.id
                 );
+            }
                 
         } catch(Exception e) {
             System.err.println(e.toString());
