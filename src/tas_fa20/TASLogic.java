@@ -43,7 +43,8 @@ public class TASLogic {
             punchData.put("id", String.valueOf(punch.getID()));
             punchData.put("badgeid", String.valueOf(punch.getBadgeID()));
             punchData.put("terminalid", String.valueOf(punch.getTerminalID()));
-            punchData.put("punchtypeud", String.valueOf(punch.getPunchTypeID()));
+            punchData.put("punchtypeid", String.valueOf(punch.getPunchTypeID()));
+            punchData.put("punchdata", String.valueOf(punch.getAdjustmentType()));
             punchData.put("originaltimestamp", String.valueOf(punch.getOriginalTimeStamp()));
             punchData.put("adjustedtimestamp", String.valueOf(punch.getAdjustedTimeStamp()));
             
@@ -51,6 +52,8 @@ public class TASLogic {
             
         }
         
-        return null;
+        String json = JSONValue.toJSONString(jsonData);
+        
+        return json;
     }
 }
