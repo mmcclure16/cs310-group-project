@@ -272,6 +272,14 @@ public class TASDatabase {
         
     }
     
+    public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
+        return null;
+    }
+    
+    public Absenteeism getAbsenteeism(String badgeID, Long timeStamp) {
+        return null;
+    }
+    
     /**
      * Inserts an entry into the `punch` table based off a given `Punch` object
      * @param p The `Punch` object whose information should be inserted into
@@ -311,6 +319,10 @@ public class TASDatabase {
         }
         
         return 0;
+        
+    }
+    
+    public void insertAbsenteeism(Absenteeism absenteeism) {
         
     }
         
@@ -448,9 +460,7 @@ public class TASDatabase {
             
         }
     }
-    public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
-        return null;
-    }
+    
 }
 
 

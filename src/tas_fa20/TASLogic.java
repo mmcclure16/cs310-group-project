@@ -56,4 +56,8 @@ public class TASLogic {
         
         return json;
     }
+    
+    public static double calculateAbsenteeism(ArrayList<Punch> punchList, Shift shift) {
+        return 0d;
+    }
 }
