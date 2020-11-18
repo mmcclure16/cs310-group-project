@@ -448,6 +448,9 @@ public class TASDatabase {
             
         }
     }
+    public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
+        return null;
+    }
 }
 
 
