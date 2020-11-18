@@ -1,11 +1,5 @@
-package edu.jsu.mcis.cs310.tas_fa20;
+package tas_fa20;
 
-import edu.jsu.mcis.cs310.tas_fa20.Absenteeism;
-import edu.jsu.mcis.cs310.tas_fa20.Punch;
-import edu.jsu.mcis.cs310.tas_fa20.TASLogic;
-import edu.jsu.mcis.cs310.tas_fa20.Shift;
-import edu.jsu.mcis.cs310.tas_fa20.TASDatabase;
-import edu.jsu.mcis.cs310.tas_fa20.Badge;
 import java.util.ArrayList;
 import org.junit.*;
 import static org.junit.Assert.*;
