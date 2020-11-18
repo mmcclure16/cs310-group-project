@@ -37,4 +37,11 @@ public class Badge {
         return(badge.toString());
     }
     
+    
+    /* Alternatively titled method aliases for Feature Test compatability */
+    
+    public String getId() {
+        return getID();
+    }
+    
 }
