@@ -277,6 +277,34 @@ public class TASDatabase {
     }
     
     public Absenteeism getAbsenteeism(String badgeID, Long timeStamp) {
+         try {
+            
+            query = "SELECT * FROM absenteeism WHERE badgeID = ? AND payperiod = ?";
+            pstSelect = conn.prepareStatement(query);
+            pstSelect.setString(1, badgeID);
+            pstSelect.setLong(2, timeStamp);
+            
+            resultSet = pstSelect.executeQuery();
+            
+            if (resultSet.next()) {
+                
+                Absenteeism ret = new Absenteeism(
+                        resultSet.getString("badgeID"), 
+                        resultSet.getLong("payperiod"), 
+                        resultSet.getDouble("percentage"));
+                
+                return ret;
+                
+            }
+            
+            else throw new Exception(
+                    "Query unsuccessful: absenteeism entry with ID `" + badgeID
+                    + "` either does not exist or the database has failed."
+            );
+            
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
         return null;
     }
     
