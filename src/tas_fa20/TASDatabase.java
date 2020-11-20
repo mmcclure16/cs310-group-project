@@ -141,6 +141,10 @@ public class TASDatabase {
         
     }
     
+    public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
+        return null;
+    }
+    
     /**
      * Method for retrieving badge info and populating a Badge object from a
      * given badge ID
@@ -270,10 +274,6 @@ public class TASDatabase {
         
         return null;
         
-    }
-    
-    public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
-        return null;
     }
     
     public Absenteeism getAbsenteeism(String badgeID, Long timeStamp) {
